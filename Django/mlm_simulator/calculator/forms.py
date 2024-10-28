@@ -5,7 +5,7 @@ unit_field = ((1, 'currency'), ('2', 'percentage'))
 class BaseDetailCollectionForm(forms.Form):
     joining_package_fee = forms.DecimalField()
     additional_product_price = forms.DecimalField()
-    number_of_levels = forms.IntegerField(required=True)
+    number_of_users = forms.IntegerField(required=True)
     sponsor_bonus = forms.DecimalField()
     sponsor_bonus_unit = forms.ChoiceField(choices=unit_field)
     business_expenses_per_member = forms.DecimalField()

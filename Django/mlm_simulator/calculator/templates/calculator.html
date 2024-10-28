@@ -1,2 +1,8 @@
 <div>Calculator</div>
-<div>{{form.as_p}}</div>
+<div>
+    <form action="" method="post">
+        {% csrf_token %}
+        {{form.as_p}}
+        <input type="submit" />
+    </form>
+</div>
