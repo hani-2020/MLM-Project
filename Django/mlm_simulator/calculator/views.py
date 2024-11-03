@@ -24,33 +24,26 @@ class Tree:
     def __init__(self):
         self.root = None
 
-    def createTree(self, number_of_members, member=None, id=1, left_value=1, right_value=None):
+    def createTree(self, number_of_members):
         if number_of_members <= 0:
             return None
         if self.root is None:
             right_value = 2 * number_of_members
-            self.root = Member(id, left_value, right_value, None)
-            member = self.root
-        else:
-            member = Member(id, left_value, right_value, member.parent) 
-        mid_value = (left_value + right_value) // 2
-        if number_of_members > 1:
-            member.left_member = self.createTree(
-                number_of_members=number_of_members - 1,
-                member=member,
-                id=id * 2,
-                left_value=left_value,
-                right_value=mid_value
-            )
-        if number_of_members > 1:
-            member.right_member = self.createTree(
-                number_of_members=number_of_members - 1,
-                member=member,
-                id=id * 2 + 1,
-                left_value=mid_value+1,
-                right_value=right_value
-            )
-        return member
+            self.root = Member(1, 1, right_value, None) 
+            self._add_members(self.root, number_of_members - 1)
+        return self.root
+
+    def _add_members(self, node, remaining_members):
+        if remaining_members <= 1:
+            return
+        left_id = 2 * node.id
+        right_id = 2 * node.id + 1
+
+        mid_value = (node.left_value + node.right_value) // 2
+        node.left_member = Member(left_id, node.left_value + 1, mid_value, node)
+        node.right_member = Member(right_id, mid_value + 1, node.right_value - 1, node)
+        self._add_members(node.left_member, remaining_members // 2)
+        self._add_members(node.right_member, remaining_members // 2)
 
     def __str__(self):
         return self._display_tree(self.root)
@@ -78,6 +71,7 @@ class Calculator(View):
         number_of_users = int(request.POST.get('number_of_users'))
         tree = Tree()
         tree.createTree(number_of_users)
+        print(tree)
         pass
         
             
