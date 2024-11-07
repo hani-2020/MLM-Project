@@ -12,21 +12,31 @@ class Member:
         self.parent = parent
         self.left = None
         self.right = None
+        self.sale = None
+        self.sponsor_bonus = None
+        self.binary_bonus = None
+        self.left_sales = None
+        self.right_sales = None
+        self.carry_forward = None
+        # self.matching_bonus = None
 
 class Tree:
 
-    def __init__(self, num_members):
+    def __init__(self, num_members, package_price, additional_product_price):
         self.root = None
         self.num_members = num_members
+        self.members = []
         self.build_tree()
         self.sum = 1
         self.root.left = self.sum
         self.assign_left_right(self.root)
+        self.set_member_sales(package_price, additional_product_price)
 
     def build_tree(self):
         if self.num_members <= 0:
             return
         self.root = Member(id=1, parent=None)
+        self.members.append(self.root)
         queue = [self.root]
         current_id = 2 
         while current_id <= self.num_members:
@@ -36,25 +46,57 @@ class Tree:
                 left_child.position = 'Left'
                 current_member.left_member = left_child
                 queue.append(left_child)
+                self.members.append(left_child)
                 current_id += 1
             if current_id <= self.num_members:
                 right_child = Member(id=current_id, parent=current_member)
                 right_child.position = 'Right'
                 current_member.right_member = right_child
                 queue.append(right_child)
+                self.members.append(right_child)
                 current_id += 1
 
-    # def assign_left_right(self, node):
-    #     if node is None:
-    #         return
-    #     node.left = self.sum
-    #     self.sum += 1
-    #     if node.left_member:
-    #         self.assign_left_right(node.left_member)
-    #     node.right = self.sum
-    #     self.sum += 1 
-    #     if node.right_member:
-    #         self.assign_left_right(node.right_member)
+    def set_member_sales(self, package_price, additional_product_price):
+        for member in self.members:
+            if member.id != 1:
+                member.sale = package_price + (additional_product_price or 0)
+
+    def set_and_get_sponsor_bonus(self, sponsor_percentage):
+        total_bonus = 0
+        for member in self.members:
+            right_bonus = 0
+            left_bonus = 0
+            if member.right_member and member.right_member.sale:
+                right_bonus = member.right_member.sale * sponsor_percentage/100
+            if member.left_member and member.left_member.sale:
+                left_bonus = member.left_member.sale * sponsor_percentage/100
+            member.sponsor_bonus = right_bonus + left_bonus
+            total_bonus = total_bonus + member.sponsor_bonus
+        return total_bonus
+
+    def set_and_get_binary_bonus(self, binary_percentage):
+        total_bonus = 0
+        for member in self.members:
+            left_sales = 0
+            right_sales = 0
+            if member.left_member:
+                left_sales = self.traverse(member.left_member)
+                member.left_sales = left_sales
+            if member.right_member:
+                right_sales = self.traverse(member.right_member)
+                member.right_sales = right_sales
+            member.binary_bonus = min(left_sales, right_sales) * binary_percentage/100
+            member.carry_forward = abs(left_sales - right_sales)
+            total_bonus = total_bonus + member.binary_bonus
+        return total_bonus
+
+    def traverse(self, node):
+        if not node:
+            return 0
+        current_sales = node.sale if node.sale is not None else 0
+        left_sales = self.traverse(node.left_member)
+        right_sales = self.traverse(node.right_member)
+        return current_sales + left_sales + right_sales
 
     def assign_left_right(self, node):
         if not node.parent and node.left and node.right:
@@ -73,7 +115,6 @@ class Tree:
             node.right = self.sum
             if node.parent:
                 self.assign_left_right(node.parent)
-        
 
     def display_tree(self):
         queue = [self.root]
@@ -90,9 +131,6 @@ class Tree:
             if current_member.right_member:
                 queue.append(current_member.right_member)
 
-            
-    
-
 class Calculator(View):
 
     template_name = 'calculator.html'
@@ -103,9 +141,16 @@ class Calculator(View):
         return render(request, self.template_name, context)
     
     def post(self, request, *args, **kwargs):
-        number_of_users = int(request.POST.get('number_of_users'))
-        tree = Tree(number_of_users)
+        form = BinaryForm(request.POST)
+        if form.is_valid():
+            number_of_users = form.cleaned_data['number_of_users']
+            joining_package_fee = form.cleaned_data['joining_package_fee']
+            additional_product_price = form.cleaned_data['additional_product_price']
+            sponsor_bonus = form.cleaned_data['sponsor_bonus']
+            binary_bonus = form.cleaned_data['binary_bonus']
+        tree = Tree(number_of_users, joining_package_fee, additional_product_price)
         tree.display_tree()
+        bonus = tree.set_and_get_binary_bonus(binary_bonus)
         pass
         
             
