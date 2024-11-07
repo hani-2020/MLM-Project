@@ -20,6 +20,7 @@ class Tree:
         self.num_members = num_members
         self.build_tree()
         self.sum = 1
+        self.root.left = self.sum
         self.assign_left_right(self.root)
 
     def build_tree(self):
@@ -43,17 +44,35 @@ class Tree:
                 queue.append(right_child)
                 current_id += 1
 
+    # def assign_left_right(self, node):
+    #     if node is None:
+    #         return
+    #     node.left = self.sum
+    #     self.sum += 1
+    #     if node.left_member:
+    #         self.assign_left_right(node.left_member)
+    #     node.right = self.sum
+    #     self.sum += 1 
+    #     if node.right_member:
+    #         self.assign_left_right(node.right_member)
+
     def assign_left_right(self, node):
-        if node is None:
+        if not node.parent and node.left and node.right:
             return
-        node.left = self.sum
-        self.sum += 1
-        if node.left_member:
+        if not node.left:
+            node.left = self.sum
+        self.sum = self.sum + 1
+        if node.left_member and not node.left_member.left:
             self.assign_left_right(node.left_member)
-        node.right = self.sum
-        self.sum += 1 
-        if node.right_member:
+        if node.right_member and not node.right_member.left:
             self.assign_left_right(node.right_member)
+        if not (node.left_member or node.right_member):
+            node.right = self.sum
+            self.assign_left_right(node.parent)
+        if not node.right:
+            node.right = self.sum
+            if node.parent:
+                self.assign_left_right(node.parent)
         
 
     def display_tree(self):
