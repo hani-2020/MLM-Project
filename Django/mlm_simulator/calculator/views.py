@@ -105,12 +105,13 @@ class Tree:
         right_sales = self.traverse(node.right_member)
         return current_sales + left_sales + right_sales
     
-    # def set_and_get_matching_bonus(self, matching_percentages):
-    #     members_in_levels = defaultdict(list)
-    #     for member in self.members:
-    #         members_in_levels[member.level].append(member)
-    #     for level, member_per_level in members_in_levels.items():
-    #         for percentage in matching_percentages:
+    def set_and_get_matching_bonus(self, matching_percentages):
+        members_in_levels = defaultdict(list)
+        for member in self.members:
+            members_in_levels[member.level].append(member)
+        
+        pass
+
 
 
     def assign_left_right(self, node):
