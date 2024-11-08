@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.views import View
 from .forms import BinaryForm
+from collections import defaultdict
 
 class Member:
 
@@ -10,6 +11,7 @@ class Member:
         self.right_member = None
         self.position = None
         self.parent = parent
+        self.level = None
         self.left = None
         self.right = None
         self.sale = None
@@ -18,7 +20,7 @@ class Member:
         self.left_sales = None
         self.right_sales = None
         self.carry_forward = None
-        # self.matching_bonus = None
+        self.matching_bonus = None
 
 class Tree:
 
@@ -36,6 +38,7 @@ class Tree:
         if self.num_members <= 0:
             return
         self.root = Member(id=1, parent=None)
+        self.root.level = 1
         self.members.append(self.root)
         queue = [self.root]
         current_id = 2 
@@ -43,6 +46,8 @@ class Tree:
             current_member = queue.pop(0)
             if current_id <= self.num_members:
                 left_child = Member(id=current_id, parent=current_member)
+                if left_child.level != left_child.parent.level + 1:
+                    left_child.level = left_child.parent.level + 1
                 left_child.position = 'Left'
                 current_member.left_member = left_child
                 queue.append(left_child)
@@ -50,6 +55,8 @@ class Tree:
                 current_id += 1
             if current_id <= self.num_members:
                 right_child = Member(id=current_id, parent=current_member)
+                if right_child.level != right_child.parent.level + 1:
+                    right_child.level = right_child.parent.level + 1
                 right_child.position = 'Right'
                 current_member.right_member = right_child
                 queue.append(right_child)
@@ -97,6 +104,14 @@ class Tree:
         left_sales = self.traverse(node.left_member)
         right_sales = self.traverse(node.right_member)
         return current_sales + left_sales + right_sales
+    
+    # def set_and_get_matching_bonus(self, matching_percentages):
+    #     members_in_levels = defaultdict(list)
+    #     for member in self.members:
+    #         members_in_levels[member.level].append(member)
+    #     for level, member_per_level in members_in_levels.items():
+    #         for percentage in matching_percentages:
+
 
     def assign_left_right(self, node):
         if not node.parent and node.left and node.right:
@@ -121,11 +136,8 @@ class Tree:
         while queue:
             current_member = queue.pop(0)
             print(f'Member ID: {current_member.id}, ',
-                  f'Left member: {current_member.left_member.id if current_member.left_member else None}, ',
-                  f'Right member: {current_member.right_member.id if current_member.right_member else None}, ',
-                  f'left: {current_member.left if current_member.left else None}, ',
-                  f'right: {current_member.right if current_member.right else None}, ',
-                  f'Parent: {current_member.parent.id if current_member.parent else None}')
+                  f'Level: {current_member.level if current_member.level else None}, ',
+                  )
             if current_member.left_member:
                 queue.append(current_member.left_member)
             if current_member.right_member:
@@ -148,9 +160,12 @@ class Calculator(View):
             additional_product_price = form.cleaned_data['additional_product_price']
             sponsor_bonus = form.cleaned_data['sponsor_bonus']
             binary_bonus = form.cleaned_data['binary_bonus']
+            matching_bonus_list = form.cleaned_data['matching_bonus_per_level']
         tree = Tree(number_of_users, joining_package_fee, additional_product_price)
-        tree.display_tree()
-        bonus = tree.set_and_get_binary_bonus(binary_bonus)
+        sponsor_bonus = tree.set_and_get_sponsor_bonus(sponsor_bonus)
+        binary_bonus = tree.set_and_get_binary_bonus(binary_bonus)
+        tree.set_and_get_matching_bonus(matching_bonus_list)
+        #tree.display_tree()
         pass
         
             
