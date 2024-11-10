@@ -132,23 +132,23 @@ class Tree:
         parent = parent.parent
         self.apply_matching_bonus(member, parent, matching_percentages, iterant)
 
-    def assign_left_right(self, node):
-        if not node.parent and node.left and node.right:
-            return
-        if not node.left:
-            node.left = self.sum
-        self.sum = self.sum + 1
-        if node.left_member and not node.left_member.left:
-            self.assign_left_right(node.left_member)
-        if node.right_member and not node.right_member.left:
-            self.assign_left_right(node.right_member)
-        if not (node.left_member or node.right_member):
-            node.right = self.sum
-            self.assign_left_right(node.parent)
-        if not node.right:
-            node.right = self.sum
-            if node.parent:
-                self.assign_left_right(node.parent)
+    # def assign_left_right(self, node):
+    #     if not node.parent and node.left and node.right:
+    #         return
+    #     if not node.left:
+    #         node.left = self.sum
+    #     self.sum = self.sum + 1
+    #     if node.left_member and not node.left_member.left:
+    #         self.assign_left_right(node.left_member)
+    #     if node.right_member and not node.right_member.left:
+    #         self.assign_left_right(node.right_member)
+    #     if not (node.left_member or node.right_member):
+    #         node.right = self.sum
+    #         self.assign_left_right(node.parent)
+    #     if not node.right:
+    #         node.right = self.sum
+    #         if node.parent:
+    #             self.assign_left_right(node.parent)
 
     def display_tree(self):
         queue = [self.root]
