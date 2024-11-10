@@ -140,7 +140,9 @@ class Tree:
         if iterant >= len(matching_percentages) or parent is None:
             return
         matching_bonus = parent.matching_bonus
-        matching_bonus = float(matching_bonus) + (float(member.binary_bonus)*float(matching_percentages[iterant])/100)
+        if member.binary_bonus is None:
+            member.binary_bonus = 0
+        matching_bonus = matching_bonus + (member.binary_bonus*matching_percentages[iterant]/100)
         if "2" in capping_scope and parent.matching_bonus>capping_amount:
             parent.matching_bonus = capping_amount
         else:
@@ -201,19 +203,21 @@ class Calculator(View):
             sponsor_bonus = form.cleaned_data['sponsor_bonus']
             binary_bonus = form.cleaned_data['binary_bonus']
             matching_bonus_string = form.cleaned_data['matching_bonus_per_level']
-            if matching_bonus_string:
-                matching_bonus_list = [float(value) for value in matching_bonus_string.split(",")]
-            else:
-                matching_bonus_list = [0]
             capping_amount = form.cleaned_data['capping_amount']
             capping_scope = form.cleaned_data['capping_scope']
+        if matching_bonus_string:
+                matching_bonus_list = [float(value) for value in matching_bonus_string.split(",")]
+        else:
+            matching_bonus_list = [0]
+        if capping_scope and not capping_amount:
+            capping_amount = 10**100
         tree = Tree(number_of_users, joining_package_fee, additional_product_price)
         sponsor_bonus = tree.set_and_get_sponsor_bonus(sponsor_bonus, capping_amount, capping_scope)
         binary_bonus = tree.set_and_get_binary_bonus(binary_bonus, capping_amount, capping_scope)
         matching_bonus = tree.set_and_get_matching_bonus(matching_bonus_list, capping_amount, capping_scope)
-        tree.display_tree()
-        pass
-        
-            
-
-
+        context = {
+            'sponsor_bonus':sponsor_bonus,
+            'binary_bonus':binary_bonus,
+            "matching_bonus":matching_bonus
+        }
+        return render(request, 'result.html', context)
