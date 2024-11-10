@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.views import View
 from .forms import BinaryForm
+from .models import Members
 
 class Member:
 
@@ -215,9 +216,33 @@ class Calculator(View):
         sponsor_bonus = tree.set_and_get_sponsor_bonus(sponsor_bonus, capping_amount, capping_scope)
         binary_bonus = tree.set_and_get_binary_bonus(binary_bonus, capping_amount, capping_scope)
         matching_bonus = tree.set_and_get_matching_bonus(matching_bonus_list, capping_amount, capping_scope)
+        self.store_in_db(tree.members)
         context = {
             'sponsor_bonus':sponsor_bonus,
             'binary_bonus':binary_bonus,
             "matching_bonus":matching_bonus
         }
         return render(request, 'result.html', context)
+    
+    def store_in_db(self, tree_members):
+        Members.objects.all().delete()
+        members_to_create = []
+        for member in tree_members:
+            members_to_create.append(
+                Members(
+                    user_id=member.id,
+                    left_member=member.left_member.id if member.left_member else None,
+                    right_member=member.right_member.id if member.right_member else None,
+                    position=member.position,
+                    parent=member.parent.id if member.parent else None,
+                    level=member.level,
+                    sale=member.sale,
+                    sponsor_bonus=member.sponsor_bonus,
+                    binary_bonus=member.binary_bonus,
+                    left_sales=member.left_sales,
+                    right_sales=member.right_sales,
+                    carry_forward=member.carry_forward,
+                    matching_bonus=member.matching_bonus
+                )
+            )
+        Members.objects.bulk_create(members_to_create)
