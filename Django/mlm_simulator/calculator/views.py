@@ -11,8 +11,8 @@ class Member:
         self.position = None
         self.parent = parent
         self.level = None
-        self.left = None
-        self.right = None
+        # self.left = None
+        # self.right = None
         self.sale = None
         self.sponsor_bonus = None
         self.binary_bonus = None
@@ -30,7 +30,7 @@ class Tree:
         self.build_tree()
         self.sum = 1
         self.root.left = self.sum
-        self.assign_left_right(self.root)
+        #self.assign_left_right(self.root)
         self.set_member_sales(package_price, additional_product_price)
 
     def build_tree(self):
@@ -92,7 +92,11 @@ class Tree:
                 right_sales = self.traverse(member.right_member)
                 member.right_sales = right_sales
             member.binary_bonus = min(left_sales, right_sales) * binary_percentage/100
-            member.carry_forward = abs(left_sales - right_sales)
+            carrry_forward = left_sales - right_sales
+            if member.left_member and carrry_forward>0:
+                member.left_member.carry_forward = carrry_forward
+            elif member.right_member and carrry_forward<0:
+                member.right_member.carryforward = -1 * carrry_forward
             total_bonus = total_bonus + member.binary_bonus
         return total_bonus
 
@@ -151,8 +155,7 @@ class Tree:
         while queue:
             current_member = queue.pop(0)
             print(f'Member ID: {current_member.id}, ',
-                  f'Binary Bonus: {current_member.binary_bonus if current_member.binary_bonus else None}, ',
-                  f'Matching Bonus: {current_member.matching_bonus if current_member.matching_bonus else None}, ',
+                  f'carry forward: {current_member.carry_forward if current_member.carry_forward else None}, ',
                   )
             if current_member.left_member:
                 queue.append(current_member.left_member)
