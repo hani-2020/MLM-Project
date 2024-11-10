@@ -145,7 +145,6 @@ class Tree:
             parent.matching_bonus = capping_amount
         else:
             parent.matching_bonus = matching_bonus
-        #parent.matching_bonus = parent.matching_bonus + (float(member.binary_bonus)*float(matching_percentages[iterant])/100)
         iterant = iterant + 1
         parent = parent.parent
         self.apply_matching_bonus(member, parent, matching_percentages, iterant, capping_amount, capping_scope)
