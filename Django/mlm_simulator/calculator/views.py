@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from django.views import View
 from .forms import BinaryForm
-from collections import defaultdict
 
 class Member:
 
@@ -106,13 +105,23 @@ class Tree:
         return current_sales + left_sales + right_sales
     
     def set_and_get_matching_bonus(self, matching_percentages):
-        members_in_levels = defaultdict(list)
         for member in self.members:
-            members_in_levels[member.level].append(member)
-        
-        pass
+            iterant = 0
+            if not member.parent:
+                continue
+            parent = member.parent
+            if parent.matching_bonus is None:
+                parent.matching_bonus = 0
+            self.apply_matching_bonus(member, parent, matching_percentages, iterant)
+        return
 
-
+    def apply_matching_bonus(self, member, parent, matching_percentages, iterant):
+        if iterant >= len(matching_percentages) or parent is None:
+            return
+        parent.matching_bonus = parent.matching_bonus + (float(member.binary_bonus)*float(matching_percentages[iterant])/100)
+        iterant = iterant + 1
+        parent = parent.parent
+        self.apply_matching_bonus(member, parent, matching_percentages, iterant)
 
     def assign_left_right(self, node):
         if not node.parent and node.left and node.right:
@@ -137,7 +146,8 @@ class Tree:
         while queue:
             current_member = queue.pop(0)
             print(f'Member ID: {current_member.id}, ',
-                  f'Level: {current_member.level if current_member.level else None}, ',
+                  f'Binary Bonus: {current_member.binary_bonus if current_member.binary_bonus else None}, ',
+                  f'Matching Bonus: {current_member.matching_bonus if current_member.matching_bonus else None}, ',
                   )
             if current_member.left_member:
                 queue.append(current_member.left_member)
@@ -161,12 +171,13 @@ class Calculator(View):
             additional_product_price = form.cleaned_data['additional_product_price']
             sponsor_bonus = form.cleaned_data['sponsor_bonus']
             binary_bonus = form.cleaned_data['binary_bonus']
-            matching_bonus_list = form.cleaned_data['matching_bonus_per_level']
+            matching_bonus_string = form.cleaned_data['matching_bonus_per_level']
+            matching_bonus_list = [float(value) for value in matching_bonus_string.split(",")]
         tree = Tree(number_of_users, joining_package_fee, additional_product_price)
         sponsor_bonus = tree.set_and_get_sponsor_bonus(sponsor_bonus)
         binary_bonus = tree.set_and_get_binary_bonus(binary_bonus)
         tree.set_and_get_matching_bonus(matching_bonus_list)
-        #tree.display_tree()
+        tree.display_tree()
         pass
         
             
