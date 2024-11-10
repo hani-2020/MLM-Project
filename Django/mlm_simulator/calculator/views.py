@@ -28,8 +28,8 @@ class Tree:
         self.num_members = num_members
         self.members = []
         self.build_tree()
-        self.sum = 1
-        self.root.left = self.sum
+        # self.sum = 1
+        # self.root.left = self.sum
         #self.assign_left_right(self.root)
         self.set_member_sales(package_price, additional_product_price)
 
