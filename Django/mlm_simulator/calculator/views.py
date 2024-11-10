@@ -113,7 +113,12 @@ class Tree:
             if parent.matching_bonus is None:
                 parent.matching_bonus = 0
             self.apply_matching_bonus(member, parent, matching_percentages, iterant)
-        return
+        sum = 0
+        for member in self.members:
+            if member.matching_bonus is None:
+                continue
+            sum = sum + member.matching_bonus
+        return sum
 
     def apply_matching_bonus(self, member, parent, matching_percentages, iterant):
         if iterant >= len(matching_percentages) or parent is None:
@@ -176,7 +181,7 @@ class Calculator(View):
         tree = Tree(number_of_users, joining_package_fee, additional_product_price)
         sponsor_bonus = tree.set_and_get_sponsor_bonus(sponsor_bonus)
         binary_bonus = tree.set_and_get_binary_bonus(binary_bonus)
-        tree.set_and_get_matching_bonus(matching_bonus_list)
+        matching_bonus = tree.set_and_get_matching_bonus(matching_bonus_list)
         tree.display_tree()
         pass
         
