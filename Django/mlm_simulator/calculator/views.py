@@ -71,7 +71,7 @@ class Tree:
             if member.id != 1:
                 member.sale = package_price + (additional_product_price or 0)
 
-    def set_and_get_sponsor_bonus(self, sponsor_percentage):
+    def set_and_get_sponsor_bonus(self, sponsor_percentage, capping_amount, capping_scope):
         total_bonus = 0
         for member in self.members:
             right_bonus = 0
@@ -80,11 +80,15 @@ class Tree:
                 right_bonus = member.right_member.sale * sponsor_percentage/100
             if member.left_member and member.left_member.sale:
                 left_bonus = member.left_member.sale * sponsor_percentage/100
-            member.sponsor_bonus = right_bonus + left_bonus
+            sponsor_bonus = right_bonus + left_bonus
+            if '3' in capping_scope and sponsor_bonus>capping_amount:
+                member.sponsor_bonus = capping_amount
+            else:
+                member.sponsor_bonus = sponsor_bonus
             total_bonus = total_bonus + member.sponsor_bonus
         return total_bonus
 
-    def set_and_get_binary_bonus(self, binary_percentage):
+    def set_and_get_binary_bonus(self, binary_percentage, capping_amount, capping_scope):
         total_bonus = 0
         for member in self.members:
             left_sales = 0
@@ -95,7 +99,11 @@ class Tree:
             if member.right_member:
                 right_sales = self.traverse(member.right_member)
                 member.right_sales = right_sales
-            member.binary_bonus = min(left_sales, right_sales) * binary_percentage/100
+            binary_bonus = min(left_sales, right_sales) * binary_percentage/100
+            if "1" in capping_scope and binary_bonus>capping_amount:
+                member.binary_bonus = capping_amount
+            else:
+                member.binary_bonus = binary_bonus
             carrry_forward = left_sales - right_sales
             if member.left_member and carrry_forward>0:
                 member.left_member.carry_forward = carrry_forward
@@ -112,7 +120,7 @@ class Tree:
         right_sales = self.traverse(node.right_member)
         return current_sales + left_sales + right_sales
     
-    def set_and_get_matching_bonus(self, matching_percentages):
+    def set_and_get_matching_bonus(self, matching_percentages, capping_amount, capping_scope):
         for member in self.members:
             iterant = 0
             if not member.parent:
@@ -120,21 +128,27 @@ class Tree:
             parent = member.parent
             if parent.matching_bonus is None:
                 parent.matching_bonus = 0
-            self.apply_matching_bonus(member, parent, matching_percentages, iterant)
+            self.apply_matching_bonus(member, parent, matching_percentages, iterant, capping_amount, capping_scope)
         sum = 0
         for member in self.members:
             if member.matching_bonus is None:
                 continue
-            sum = sum + member.matching_bonus
+            sum = sum + float(member.matching_bonus)
         return sum
 
-    def apply_matching_bonus(self, member, parent, matching_percentages, iterant):
+    def apply_matching_bonus(self, member, parent, matching_percentages, iterant, capping_amount, capping_scope):
         if iterant >= len(matching_percentages) or parent is None:
             return
-        parent.matching_bonus = parent.matching_bonus + (float(member.binary_bonus)*float(matching_percentages[iterant])/100)
+        matching_bonus = parent.matching_bonus
+        matching_bonus = float(matching_bonus) + (float(member.binary_bonus)*float(matching_percentages[iterant])/100)
+        if "2" in capping_scope and parent.matching_bonus>capping_amount:
+            parent.matching_bonus = capping_amount
+        else:
+            parent.matching_bonus = matching_bonus
+        #parent.matching_bonus = parent.matching_bonus + (float(member.binary_bonus)*float(matching_percentages[iterant])/100)
         iterant = iterant + 1
         parent = parent.parent
-        self.apply_matching_bonus(member, parent, matching_percentages, iterant)
+        self.apply_matching_bonus(member, parent, matching_percentages, iterant, capping_amount, capping_scope)
 
     ##################hits pythons recursions limit from 500 members:BEGIN##############################
     # def assign_left_right(self, node):
@@ -161,7 +175,9 @@ class Tree:
         while queue:
             current_member = queue.pop(0)
             print(f'Member ID: {current_member.id}, ',
-                  f'carry forward: {current_member.carry_forward if current_member.carry_forward else None}, ',
+                  f'Sponsor Bonus: {current_member.sponsor_bonus if current_member.sponsor_bonus else None}, ',
+                  f'Binary Bonus: {current_member.binary_bonus if current_member.binary_bonus else None}, '
+                  f'Matching Bonus: {current_member.matching_bonus if current_member.matching_bonus else None}, '
                   )
             if current_member.left_member:
                 queue.append(current_member.left_member)
@@ -186,11 +202,16 @@ class Calculator(View):
             sponsor_bonus = form.cleaned_data['sponsor_bonus']
             binary_bonus = form.cleaned_data['binary_bonus']
             matching_bonus_string = form.cleaned_data['matching_bonus_per_level']
-            matching_bonus_list = [float(value) for value in matching_bonus_string.split(",")]
+            if matching_bonus_string:
+                matching_bonus_list = [float(value) for value in matching_bonus_string.split(",")]
+            else:
+                matching_bonus_list = [0]
+            capping_amount = form.cleaned_data['capping_amount']
+            capping_scope = form.cleaned_data['capping_scope']
         tree = Tree(number_of_users, joining_package_fee, additional_product_price)
-        sponsor_bonus = tree.set_and_get_sponsor_bonus(sponsor_bonus)
-        binary_bonus = tree.set_and_get_binary_bonus(binary_bonus)
-        matching_bonus = tree.set_and_get_matching_bonus(matching_bonus_list)
+        sponsor_bonus = tree.set_and_get_sponsor_bonus(sponsor_bonus, capping_amount, capping_scope)
+        binary_bonus = tree.set_and_get_binary_bonus(binary_bonus, capping_amount, capping_scope)
+        matching_bonus = tree.set_and_get_matching_bonus(matching_bonus_list, capping_amount, capping_scope)
         tree.display_tree()
         pass
         
