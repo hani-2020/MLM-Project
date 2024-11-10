@@ -11,8 +11,10 @@ class Member:
         self.position = None
         self.parent = parent
         self.level = None
+        ##################hits pythons recursions limit from 500 members:BEGIN##############################
         # self.left = None
         # self.right = None
+        ##################hits pythons recursions limit from 500 members:END##############################
         self.sale = None
         self.sponsor_bonus = None
         self.binary_bonus = None
@@ -28,9 +30,11 @@ class Tree:
         self.num_members = num_members
         self.members = []
         self.build_tree()
+        ##################hits pythons recursions limit from 500 members:BEGIN##############################
         # self.sum = 1
         # self.root.left = self.sum
         #self.assign_left_right(self.root)
+        ##################hits pythons recursions limit from 500 members:END##############################
         self.set_member_sales(package_price, additional_product_price)
 
     def build_tree(self):
@@ -132,6 +136,7 @@ class Tree:
         parent = parent.parent
         self.apply_matching_bonus(member, parent, matching_percentages, iterant)
 
+    ##################hits pythons recursions limit from 500 members:BEGIN##############################
     # def assign_left_right(self, node):
     #     if not node.parent and node.left and node.right:
     #         return
@@ -149,6 +154,7 @@ class Tree:
     #         node.right = self.sum
     #         if node.parent:
     #             self.assign_left_right(node.parent)
+    ##################hits pythons recursions limit from 500 members:END##############################
 
     def display_tree(self):
         queue = [self.root]
