@@ -215,22 +215,17 @@ class Calculator(View):
         if capping_scope and not capping_amount:
             capping_amount = 10**100
         ##################go stuff:BEGIN#########################
-        # input = {
-        #     'number_of_users': number_of_users,
-        #     'joining_package_fee': joining_package_fee,
-        #     'additional_product_price': additional_product_price,
-        #     'sponsor_bonus': sponsor_bonus,
-        #     'binary_bonus': binary_bonus,
-        #     'matching_bonus_list': matching_bonus_list,
-        #     'capping_amount': capping_amount,
-        #     'capping_scope': capping_scope
-        # }
-        # try:
-        #     response = requests.post("http://localhost:8080", json=input)
-        #     response_data = response.json()
-        #     return JsonResponse(response_data)
-        # except requests.exceptions.RequestException as e:
-        #     return JsonResponse({"error": str(e)}, status=500)
+        input = {
+            'number_of_users': number_of_users,
+            'joining_package_fee': joining_package_fee,
+            'additional_product_price': additional_product_price,
+            'sponsor_bonus': sponsor_bonus,
+            'binary_bonus': binary_bonus,
+            'matching_bonus_list': matching_bonus_list,
+            'capping_amount': capping_amount,
+            'capping_scope': capping_scope
+        }
+        self.send_to_go(input)
         ###################go stuff:END#####################
         tree = Tree(number_of_users, joining_package_fee, additional_product_price)
         sponsor_bonus = tree.set_and_get_sponsor_bonus(sponsor_bonus, capping_amount, capping_scope)
@@ -266,3 +261,11 @@ class Calculator(View):
                 )
             )
         Members.objects.bulk_create(members_to_create)
+
+    def send_to_go(self, input):
+        try:
+            response = requests.post("http://localhost:8080", json=input)
+            response_data = response.json()
+            return JsonResponse(response_data)
+        except requests.exceptions.RequestException as e:
+            return JsonResponse({"error": str(e)}, status=500)
