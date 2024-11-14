@@ -212,7 +212,7 @@ class Calculator(View):
                 matching_bonus_list = [float(value) for value in matching_bonus_string.split(",")]
         else:
             matching_bonus_list = [0]
-        if capping_scope and not capping_amount:
+        if not capping_scope or not capping_amount:
             capping_amount = 10**100
         ##################go stuff:BEGIN#########################
         input = {
@@ -231,6 +231,7 @@ class Calculator(View):
         sponsor_bonus = tree.set_and_get_sponsor_bonus(sponsor_bonus, capping_amount, capping_scope)
         binary_bonus = tree.set_and_get_binary_bonus(binary_bonus, capping_amount, capping_scope)
         matching_bonus = tree.set_and_get_matching_bonus(matching_bonus_list, capping_amount, capping_scope)
+        tree.display_tree()
         self.store_in_db(tree.members)
         context = {
             'sponsor_bonus':sponsor_bonus,
