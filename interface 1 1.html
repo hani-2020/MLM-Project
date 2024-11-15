@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MLM Plan Calculator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 850px;
+            padding: 30px;
+            background-color: #ffffff;
+            box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.15);
+            border-radius: 20px;
+            transition: box-shadow 0.3s ease;
+        }
+        .container:hover {
+            box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .plan-card {
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #ddd;
+            background-color: #f9fafb;
+            transition: all 0.3s ease;
+        }
+        .plan-card:hover {
+            background-color: #ffffff;
+            border-color: #ccc;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);
+        }
+        .form-label {
+            font-weight: 500;
+            color: #555;
+        }
+        .btn-group .btn {
+            min-width: 100px;
+        }
+        .hidden {
+            display: none;
+        }
+        .btn-primary {
+            background-color: #5a67d8;
+            border-color: #5a67d8;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #4c51bf;
+            border-color: #4c51bf;
+        }
+        .btn-success {
+            background-color: #48bb78;
+            border-color: #48bb78;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>MLM Plan Calculator</h2>
+    <form id="mlmCalculator">
+        <!-- Base Currency -->
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="numUsers" class="form-label">Number of Users</label>
+                <input type="number" class="form-control" id="numUsers" placeholder="Enter number of users">
+            </div>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="baseCurrency" class="form-label">Base Currency</label>
+                <select id="baseCurrency" class="form-select">
+                    <option value="USD">USD</option>
+                    <option value="EURO">EURO</option>
+                    <option value="INR">INR</option>
+                    <option value="AED">AED</option>
+                    <option value="HKD">HKD</option>
+                </select>
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+                <div class="btn-group w-100" role="group">
+                    <button type="button" class="btn btn-primary" id="binaryBtn">BINARY MLM</button>
+                    <button type="button" class="btn btn-primary" id="unilevelBtn">UNILEVEL MLM</button>
+                    <button type="button" class="btn btn-primary" id="matrixBtn">MATRIX MLM</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Data Fields -->
+        <div id="productContainer">
+            <div class="plan-card mt-4 p-4 product-entry">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <input type="text" class="form-control form-control-lg" id="productName" placeholder="Product Name">
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <input type="number" class="form-control" id="productPrice" placeholder="Price">
+                        <label for="productPrice" class="form-label small text-muted">Price</label>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="number" class="form-control" id="productBV" placeholder="BV">
+                        <label for="productBV" class="form-label small text-muted">Business Volume</label>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="number" class="form-control" id="productQuantity" placeholder="Quantity">
+                        <label for="productQuantity" class="form-label small text-muted">Quantity</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-primary mt-3" onclick="addProduct()">+ Add Product</button>
+
+        <!-- Binary Form Fields -->
+        <div id="binaryForm" class="plan-card hidden mt-4">
+            <h5>BINARY MLM Plan</h5>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="binaryPercentage" class="form-label">Binary %</label>
+                    <input type="number" class="form-control" id="binaryPercentage" placeholder="Binary %">
+                </div>
+                <div class="col-md-4">
+                    <label for="binaryRatio" class="form-label">Ratio</label>
+                    <input type="text" class="form-control" id="binaryRatio" placeholder="e.g., 1:1">
+                </div>
+                <div class="col-md-4">
+                    <label for="binaryOption" class="form-label">Bonus Option</label>
+                    <select id="binaryOption" class="form-select">
+                        <option value="price">Price</option>
+                        <option value="bv">BV</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="sponsorBonus" class="form-label">Sponsor Bonus (%)</label>
+                    <input type="number" class="form-control" id="sponsorBonus" placeholder="Sponsor Bonus %">
+                </div>
+                <div class="col-md-6">
+                    <label for="matchingBonus" class="form-label">Matching Bonus (%)</label>
+                    <input type="number" class="form-control" id="matchingBonus" placeholder="Matching Bonus %">
+                </div>
+            </div>
+        </div>
+
+        <!-- Unilevel Form Fields -->
+        <div id="unilevelForm" class="plan-card hidden mt-4">
+            <h5>UNILEVEL MLM Plan</h5>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="unilevelPercentage" class="form-label">Unilevel %</label>
+                    <input type="number" class="form-control" id="unilevelPercentage" placeholder="Unilevel %">
+                </div>
+                <div class="col-md-6">
+                    <label for="unilevelSponsorBonus" class="form-label">Sponsor Bonus (%)</label>
+                    <input type="number" class="form-control" id="unilevelSponsorBonus" placeholder="Sponsor Bonus %">
+                </div>
+            </div>
+        </div>
+
+        <!-- Matrix Form Fields -->
+        <div id="matrixForm" class="plan-card hidden mt-4">
+            <h5>MATRIX MLM Plan</h5>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="matrixPercentage" class="form-label">Matrix %</label>
+                    <input type="number" class="form-control" id="matrixPercentage" placeholder="Matrix %">
+                </div>
+                <div class="col-md-6">
+                    <label for="matrixSponsorBonus" class="form-label">Sponsor Bonus (%)</label>
+                    <input type="number" class="form-control" id="matrixSponsorBonus" placeholder="Sponsor Bonus %">
+                </div>
+            </div>
+        </div>
+
+        <!-- Capping Limit and Capping Scope -->
+        <div class="plan-card mt-4 p-4">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="cappingLimit" class="form-label">Capping Limit (Amount)</label>
+                    <input type="number" class="form-control" id="cappingLimit" placeholder="Enter amount">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Capping Scope</label>
+                    <div class="d-flex">
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" id="binaryBonus" value="Binary Bonus">
+                            <label class="form-check-label" for="binaryBonus">Binary Bonus</label>
+                        </div>
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" id="sponsorBonusScope" value="Sponsor Bonus">
+                            <label class="form-check-label" for="sponsorBonusScope">Sponsor Bonus</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="matchingBonusScope" value="Matching Bonus">
+                            <label class="form-check-label" for="matchingBonusScope">Matching Bonus</label>
+                        </div>
+                    </div>
+                </div>
+                
+                </div>
+            </div>
+    </form>
+    <div class="text-center mt-4">
+        <button type="button" class="btn btn-success" id="simulateBtn">Simulate Calculation</button>
+    </div>
+</div>
+
+<script>
+    function addProduct() {
+        event.preventDefault(); 
+        // Get the product entry to clone
+        const productContainer = document.getElementById('productContainer');
+        const newProductEntry = productContainer.firstElementChild.cloneNode(true);
+    
+        // Optionally, reset the values of the inputs in the new entry
+        newProductEntry.querySelectorAll('input').forEach(input => input.value = '');
+    
+        // Append the new entry to the container
+        productContainer.appendChild(newProductEntry);
+    }
+    document.getElementById('binaryBtn').addEventListener('click', function() {
+        event.preventDefault(); 
+        toggleForms('binaryForm');
+    });
+    document.getElementById('unilevelBtn').addEventListener('click', function() {
+        event.preventDefault(); 
+        toggleForms('unilevelForm');
+    });
+    document.getElementById('matrixBtn').addEventListener('click', function() {
+        event.preventDefault(); 
+        toggleForms('matrixForm');
+    });
+
+    function toggleForms(formId) {
+        // Hide all forms
+        document.getElementById('binaryForm').classList.add('hidden');
+        document.getElementById('unilevelForm').classList.add('hidden');
+        document.getElementById('matrixForm').classList.add('hidden');
+        
+        // Show the selected form
+        document.getElementById(formId).classList.remove('hidden');
+    }
+
+    document.getElementById('simulateBtn').addEventListener('click', function() {
+        // Grab all the input values
+        const baseCurrency = document.getElementById('baseCurrency').value;
+        const productName = document.getElementById('productName').value;
+        const productPrice = document.getElementById('productPrice').value;
+        const productBV = document.getElementById('productBV').value;
+        const productQuantity = document.getElementById('productQuantity').value;
+        const productCycle = document.getElementById('productCycle').value;
+
+        // Binary form values
+        const binaryPercentage = document.getElementById('binaryPercentage') ? document.getElementById('binaryPercentage').value : null;
+        const binaryRatio = document.getElementById('binaryRatio') ? document.getElementById('binaryRatio').value : null;
+        const binaryOption = document.getElementById('binaryOption') ? document.getElementById('binaryOption').value : null;
+
+        // Unilevel form values
+        const unilevelPercentage = document.getElementById('unilevelPercentage') ? document.getElementById('unilevelPercentage').value : null;
+        const unilevelSponsorBonus = document.getElementById('unilevelSponsorBonus') ? document.getElementById('unilevelSponsorBonus').value : null;
+
+        // Matrix form values
+        const matrixPercentage = document.getElementById('matrixPercentage') ? document.getElementById('matrixPercentage').value : null;
+        const matrixSponsorBonus = document.getElementById('matrixSponsorBonus') ? document.getElementById('matrixSponsorBonus').value : null;
+
+        // Capping limit values
+        const cappingLimit = document.getElementById('cappingLimit').value;
+        const binaryBonusChecked = document.getElementById('binaryBonus').checked;
+        const sponsorBonusChecked = document.getElementById('sponsorBonusScope').checked;
+        const matchingBonusChecked = document.getElementById('matchingBonusScope').checked;
+
+        // Create the result message
+        let resultMessage = `
+            <strong>MLM Plan Details:</strong><br>
+            Base Currency: ${baseCurrency}<br>
+            Product Name: ${productName}<br>
+            Price: ${productPrice}<br>
+            Business Volume: ${productBV}<br>
+            Quantity: ${productQuantity}<br>
+            Cycle: ${productCycle}<br><br>
+        `;
+
+        if (binaryPercentage) {
+            resultMessage += `<strong>Binary MLM Plan:</strong><br> Binary Percentage: ${binaryPercentage}%<br> Ratio: ${binaryRatio}<br> Bonus Option: ${binaryOption}<br><br>`;
+        }
+
+        if (unilevelPercentage) {
+            resultMessage += `<strong>Unilevel MLM Plan:</strong><br> Unilevel Percentage: ${unilevelPercentage}%<br> Sponsor Bonus: ${unilevelSponsorBonus}%<br><br>`;
+        }
+
+        if (matrixPercentage) {
+            resultMessage += `<strong>Matrix MLM Plan:</strong><br> Matrix Percentage: ${matrixPercentage}%<br> Sponsor Bonus: ${matrixSponsorBonus}%<br><br>`;
+        }
+
+        resultMessage += `<strong>Capping Limit:</strong><br> Capping Limit: ${cappingLimit}<br><br>`;
+
+        resultMessage += `<strong>Capping Scope:</strong><br> Binary Bonus: ${binaryBonusChecked ? 'Yes' : 'No'}<br> Sponsor Bonus: ${sponsorBonusChecked ? 'Yes' : 'No'}<br> Matching Bonus: ${matchingBonusChecked ? 'Yes' : 'No'}<br>`;
+
+        // Show result in an alert or in a specific div
+        alert(resultMessage); // Or replace this line to show results in a div
+    });
+</script>
+
+</body>
+</html>

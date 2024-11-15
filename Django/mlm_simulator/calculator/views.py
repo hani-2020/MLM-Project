@@ -203,13 +203,25 @@ class Calculator(View):
             number_of_users = form.cleaned_data['number_of_users']
             joining_package_fee = form.cleaned_data['joining_package_fee']
             additional_product_price = form.cleaned_data['additional_product_price']
+            product_names = form.cleaned_data['product_names']
+            product_prices = form.cleaned_data['product_prices']
+            product_quantities = form.cleaned_data['product_quantities']
             sponsor_bonus = form.cleaned_data['sponsor_bonus']
             binary_bonus = form.cleaned_data['binary_bonus']
             matching_bonus_string = form.cleaned_data['matching_bonus_per_level']
             capping_amount = form.cleaned_data['capping_amount']
             capping_scope = form.cleaned_data['capping_scope']
+        product_names_list = product_names.split(", ") if product_names else []
+        product_prices_list = [float(price) for price in product_prices.split(", ")] if product_prices else []
+        product_quantities_list = [int(quantity) for quantity in product_quantities.split(", ")] if product_quantities else []
+        products_catalogue = {}
+        for i in range(len(product_names_list)):
+            products_catalogue[product_names_list[i]] = {
+                'price': product_prices_list[i],
+                'quantity': product_quantities_list[i]
+            }
         if matching_bonus_string:
-                matching_bonus_list = [float(value) for value in matching_bonus_string.split(",")]
+            matching_bonus_list = [float(value) for value in matching_bonus_string.split(",")]
         else:
             matching_bonus_list = [0]
         if not capping_scope or not capping_amount:
@@ -219,6 +231,7 @@ class Calculator(View):
             'number_of_users': number_of_users,
             'joining_package_fee': joining_package_fee,
             'additional_product_price': additional_product_price,
+            'products_catalogue': products_catalogue,
             'sponsor_bonus': sponsor_bonus,
             'binary_bonus': binary_bonus,
             'matching_bonus_list': matching_bonus_list,

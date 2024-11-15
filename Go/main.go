@@ -6,6 +6,7 @@ import (
 	"io"
 	"math"
 	"net/http"
+	//"reflect"
 )
 
 type Member struct {
@@ -158,6 +159,21 @@ func apply_matching_bonus(member *Member, parent *Member, matching_perc_list []f
 	apply_matching_bonus(member, parent, matching_perc_list, iterant, capping_amount, capping_scope)
 }
 
+func num_cycles(number_of_users float64, products_catalogue map[string]map[string]float64) float64 {
+	cycles := 0.0
+	for number_of_users > 0 {
+		for _, v1 := range products_catalogue {
+			for key := range v1 {
+				if key == "quantity" {
+					number_of_users = number_of_users - v1["quantity"]
+					cycles = cycles + 1
+				}
+			}
+		}
+	}
+	return cycles
+}
+
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		var data map[string]interface{}
@@ -173,35 +189,57 @@ func main() {
 		number_of_users := int(data["number_of_users"].(float64))
 		joining_package_fee := data["joining_package_fee"].(float64)
 		additional_product_price := data["additional_product_price"].(float64)
+		products_catalogue := data["products_catalogue"].(map[string]interface{})
 		sponsor_perc := data["sponsor_bonus"].(float64)
 		binary_perc := data["binary_bonus"].(float64)
 		matching_percs := data["matching_bonus_list"].([]interface{})
+		capping_amount := data["capping_amount"].(float64)
+		rawCappingScope := data["capping_scope"].([]interface{})
+		cappingScopeMap := make(map[string]bool)
+
+		for _, v := range rawCappingScope {
+			cappingScopeMap[v.(string)] = true
+		}
+
+		productCatalogueMap := make(map[string]map[string]float64)
+		for k, v := range products_catalogue {
+			product_map := v.(map[string]interface{})
+			detail_map := make(map[string]float64)
+			for k2, v2 := range product_map {
+				detail_map[k2] = v2.(float64)
+			}
+			productCatalogueMap[k] = detail_map
+		}
+
 		var matching_perc_list []float64
 		for _, v := range matching_percs {
 			matching_perc_list = append(matching_perc_list, v.(float64))
 		}
-		capping_amount := data["capping_amount"].(float64)
-		rawCappingScope := data["capping_scope"].([]interface{})
-		cappingScopeMap := make(map[string]bool)
-		for _, v := range rawCappingScope {
-			cappingScopeMap[v.(string)] = true
+
+		//num_cycles := num_cycles(float64(number_of_users), productCatalogueMap)
+		//fmt.Println(num_cycles)
+		for _, details := range productCatalogueMap{
+			for key, value := range details{
+				// details['quantity'] will be num users rest you will remember
+				build_tree(number_of_users, joining_package_fee, additional_product_price)
+				sponsor_bonus := set_get_sponsor_bonus(sponsor_perc, capping_amount, cappingScopeMap)
+				binary_bonus := set_get_binary_bonus(binary_perc, capping_amount, cappingScopeMap)
+				matching_bonus := set_get_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
+			}
 		}
-		build_tree(number_of_users, joining_package_fee, additional_product_price)
-		sponsor_bonus := set_get_sponsor_bonus(sponsor_perc, capping_amount, cappingScopeMap)
-		binary_bonus := set_get_binary_bonus(binary_perc, capping_amount, cappingScopeMap)
-		matching_bonus := set_get_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
-		for _, member := range members {
-			fmt.Println("#################")
-			fmt.Println("id:", member.ID)
-			fmt.Println("sponsor bonus:", member.SponsorBonus)
-			fmt.Println("binary bonus:", member.BinaryBonus)
-			fmt.Println("matching bonus:", member.MatchingBonus)
-			fmt.Println("#################")
-		}
+		// for _, member := range members {
+		// 	fmt.Println("#################")
+		// 	fmt.Println("id:", member.ID)
+		// 	fmt.Println("sponsor bonus:", member.SponsorBonus)
+		// 	fmt.Println("binary bonus:", member.BinaryBonus)
+		// 	fmt.Println("matching bonus:", member.MatchingBonus)
+		// 	fmt.Println("#################")
+		// }
+		fmt.Println("##################")
 		fmt.Println(sponsor_bonus)
 		fmt.Println(binary_bonus)
 		fmt.Println(matching_bonus)
+		fmt.Println("##################")
 	})
-	fmt.Println("Server started on port 8080")
 	http.ListenAndServe(":8080", nil)
 }
