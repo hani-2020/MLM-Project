@@ -280,36 +280,57 @@ func main() {
 				}
 			}
 			sponsor_bonus = set_get_sponsor_bonus(sponsor_perc, capping_amount, cappingScopeMap)
-			//this is referencing the oroginal table directly instead of appending copies to cycle_data need to deep copy
-			cycles_data = append(cycles_data, append([]*Member(nil), members...))
+			var copiedMembers []*Member
+			for _, member := range members {
+				copiedMember := &Member{
+					ID:                member.ID,
+					LeftMember:        member.LeftMember,
+					RightMember:       member.RightMember,
+					Position:          member.Position,
+					Parent:            member.Parent,
+					Left:              member.Left,
+					Right:             member.Right,
+					Level:             member.Level,
+					Sale:              member.Sale,
+					SponsorBonus:      member.SponsorBonus,
+					BinaryBonus:       member.BinaryBonus,
+					LeftSales:         member.LeftSales,
+					RightSales:        member.RightSales,
+					LeftCarryForward:  member.LeftCarryForward,
+					RightCarryForward: member.RightCarryForward,
+					MatchingBonus:     member.MatchingBonus,
+				}
+				copiedMembers = append(copiedMembers, copiedMember)
+			}
+			cycles_data = append(cycles_data, copiedMembers)
 			// binary_bonus = set_get_binary_bonus(binary_perc, capping_amount, cappingScopeMap)
 			// matching_bonus = set_get_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
 		}
-		// cycle := 0
-		// for _, members := range cycles_data{
-		// 	cycle = cycle + 1
-		// 	fmt.Println("Cycle:", cycle)
-		// 	for _, member := range members{
-		// 		fmt.Println("id:", member.ID)
-		// 		if member.Parent != nil {
-		// 			fmt.Println("Parent Member:", member.Parent.ID)
-		// 		} else {
-		// 			fmt.Println("Parent Member: nil")
-		// 		}
-		// 		if member.LeftMember != nil {
-		// 			fmt.Println("Left Member:", member.LeftMember.ID)
-		// 		} else {
-		// 			fmt.Println("Left Member: nil")
-		// 		}
-		// 		if member.RightMember != nil {
-		// 			fmt.Println("Right Member:", member.RightMember.ID)
-		// 		} else {
-		// 			fmt.Println("Right Member: nil")
-		// 		}
-		// 		fmt.Println("JPF:", member.Sale)
-		// 		fmt.Println("Sponsor Bonus:", member.SponsorBonus)
-		// 	}
-		// }
+		cycle := 0
+		for _, members := range cycles_data{
+			cycle = cycle + 1
+			fmt.Println("Cycle:", cycle)
+			for _, member := range members{
+				fmt.Println("id:", member.ID)
+				if member.Parent != nil {
+					fmt.Println("Parent Member:", member.Parent.ID)
+				} else {
+					fmt.Println("Parent Member: nil")
+				}
+				if member.LeftMember != nil {
+					fmt.Println("Left Member:", member.LeftMember.ID)
+				} else {
+					fmt.Println("Left Member: nil")
+				}
+				if member.RightMember != nil {
+					fmt.Println("Right Member:", member.RightMember.ID)
+				} else {
+					fmt.Println("Right Member: nil")
+				}
+				fmt.Println("JPF:", member.Sale)
+				fmt.Println("Sponsor Bonus:", member.SponsorBonus)
+			}
+		}
 		// for _, member := range members {
 		// 	fmt.Println("#################")
 		// 	fmt.Println("id:", member.ID)
