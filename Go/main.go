@@ -74,10 +74,10 @@ func build_tree(num_users int, joining_package_fee float64, additional_product_p
 	}
 }
 
-func set_get_sponsor_bonus(sponsor_perc float64, capping_amount float64, capping_scope map[string]bool) float64 {
+func set_get_sponsor_bonus(sponsor_perc float64, capping_amount float64, capping_scope map[string]bool, starting_id int) float64 {
 	var total_bonus float64 = 0
 	for _, member := range members {
-		if member.Parent != nil {
+		if member.ID>=starting_id && member.Parent != nil {
 			sponsor_bonus := member.Parent.SponsorBonus + (member.Sale * sponsor_perc / 100)
 			if capping_scope["3"] && sponsor_bonus > capping_amount {
 				member.Parent.SponsorBonus = capping_amount
@@ -247,7 +247,10 @@ func main() {
 		current_id = 1
 		queue = []*Member{}
 		var cycles_data [][]*Member
+		var cycle_start_ids []int = []int{0}
+		cycle_num := 0
 		for total_num_of_users > 0 {
+			cycle_num = cycle_num + 1
 			for product := range product_order_list {
 				number_of_users := int(productCatalogueMap[product_order_list[product]]["quantity"])
 				joining_package_fee := productCatalogueMap[product_order_list[product]]["price"]
@@ -279,7 +282,9 @@ func main() {
 					break
 				}
 			}
-			sponsor_bonus = set_get_sponsor_bonus(sponsor_perc, capping_amount, cappingScopeMap)
+			cycle_start_ids = append(cycle_start_ids, len(members))
+			starting_id := cycle_start_ids[cycle_num-1]
+			sponsor_bonus = set_get_sponsor_bonus(sponsor_perc, capping_amount, cappingScopeMap, starting_id)
 			var copiedMembers []*Member
 			for _, member := range members {
 				copiedMember := &Member{
