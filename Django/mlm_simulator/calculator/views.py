@@ -201,39 +201,63 @@ class Calculator(View):
         form = BinaryForm(request.POST)
         if form.is_valid():
             number_of_users = form.cleaned_data['number_of_users']
-            joining_package_fee = form.cleaned_data['joining_package_fee']
+            # joining_package_fee = form.cleaned_data['joining_package_fee']
             additional_product_price = form.cleaned_data['additional_product_price']
+
             product_names = form.cleaned_data['product_names']
             product_prices = form.cleaned_data['product_prices']
             product_quantities = form.cleaned_data['product_quantities']
+
             sponsor_bonus = form.cleaned_data['sponsor_bonus']
+
+            binary_bonus_range = form.cleaned_data['binary_bonus_range']
             binary_bonus = form.cleaned_data['binary_bonus']
+            binary_bonus_pairing_ratio = form.cleaned_data['binary_bonus_pairing_ratio']
+
             matching_bonus_string = form.cleaned_data['matching_bonus_per_level']
+
             capping_amount = form.cleaned_data['capping_amount']
             capping_scope = form.cleaned_data['capping_scope']
+    
         product_names_list = product_names.split(", ") if product_names else []
-        product_prices_list = [float(price) for price in product_prices.split(", ")] if product_prices else []
-        product_quantities_list = [int(quantity) for quantity in product_quantities.split(", ")] if product_quantities else []
+        product_prices_list = [float(price) for price in product_prices.split(",")] if product_prices else []
+        product_quantities_list = [int(quantity) for quantity in product_quantities.split(",")] if product_quantities else []
         products_catalogue = {}
         for i in range(len(product_names_list)):
             products_catalogue[product_names_list[i]] = {
                 'price': product_prices_list[i],
                 'quantity': product_quantities_list[i]
             }
+        
+        left, right = map(int, binary_bonus_pairing_ratio.split(":"))
+        binary_bonus_pairing_ratio_dict = {"left": left, "right": right}
+        binary_bonus_list = [float(perc) for perc in binary_bonus.split(",")]
+        parts = binary_bonus_range.split(",")
+        binary_bonus_dict = []
+        for i in range(len(parts)):
+            if "-" in parts[i]:
+                min_val, max_val = map(int, parts[i].split("-"))
+                binary_bonus_dict.append({"min": min_val, "max": max_val, "bonus": binary_bonus_list[i]})
+            else:
+                binary_bonus_dict.append({"min": int(parts[i]), "bonus": binary_bonus_list[i]})
+    
         if matching_bonus_string:
             matching_bonus_list = [float(value) for value in matching_bonus_string.split(",")]
         else:
             matching_bonus_list = [0]
+
         if not capping_scope or not capping_amount:
             capping_amount = 10**100
         ##################go stuff:BEGIN#########################
         input = {
             'number_of_users': number_of_users,
-            'joining_package_fee': joining_package_fee,
+            # 'joining_package_fee': joining_package_fee,
             'additional_product_price': additional_product_price,
             'product_order_list': product_names_list,
             'products_catalogue': products_catalogue,
             'sponsor_bonus': sponsor_bonus,
+            'binary_bonus_pairing_ratios': binary_bonus_pairing_ratio_dict,
+            'binary_bonus_range': binary_bonus_dict,
             'binary_bonus': binary_bonus,
             'matching_bonus_list': matching_bonus_list,
             'capping_amount': capping_amount,
@@ -241,17 +265,18 @@ class Calculator(View):
         }
         self.send_to_go(input)
         ###################go stuff:END#####################
-        tree = Tree(number_of_users, joining_package_fee, additional_product_price)
-        sponsor_bonus = tree.set_and_get_sponsor_bonus(sponsor_bonus, capping_amount, capping_scope)
-        binary_bonus = tree.set_and_get_binary_bonus(binary_bonus, capping_amount, capping_scope)
-        matching_bonus = tree.set_and_get_matching_bonus(matching_bonus_list, capping_amount, capping_scope)
-        tree.display_tree()
-        self.store_in_db(tree.members)
-        context = {
-            'sponsor_bonus':sponsor_bonus,
-            'binary_bonus':binary_bonus,
-            "matching_bonus":matching_bonus
-        }
+        # tree = Tree(number_of_users, joining_package_fee, additional_product_price)
+        # sponsor_bonus = tree.set_and_get_sponsor_bonus(sponsor_bonus, capping_amount, capping_scope)
+        # binary_bonus = tree.set_and_get_binary_bonus(binary_bonus, capping_amount, capping_scope)
+        # matching_bonus = tree.set_and_get_matching_bonus(matching_bonus_list, capping_amount, capping_scope)
+        # tree.display_tree()
+        # self.store_in_db(tree.members)
+        context = {}
+        # context = {
+        #     'sponsor_bonus':sponsor_bonus,
+        #     'binary_bonus':binary_bonus,
+        #     "matching_bonus":matching_bonus
+        # }
         return render(request, 'result.html', context)
     
     def store_in_db(self, tree_members):

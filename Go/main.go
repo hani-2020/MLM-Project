@@ -77,7 +77,7 @@ func build_tree(num_users int, joining_package_fee float64, additional_product_p
 func set_get_sponsor_bonus(sponsor_perc float64, capping_amount float64, capping_scope map[string]bool, starting_id int) float64 {
 	var total_bonus float64 = 0
 	for _, member := range members {
-		if member.ID>=starting_id && member.Parent != nil {
+		if member.ID >= starting_id && member.Parent != nil {
 			sponsor_bonus := member.Parent.SponsorBonus + (member.Sale * sponsor_perc / 100)
 			if capping_scope["3"] && sponsor_bonus > capping_amount {
 				member.Parent.SponsorBonus = capping_amount
@@ -191,17 +191,27 @@ func main() {
 			http.Error(w, "Invalid JSON", http.StatusBadRequest)
 			return
 		}
+
 		total_num_of_users := int(data["number_of_users"].(float64))
 		//joining_package_fee := data["joining_package_fee"].(float64)
 		additional_product_price := data["additional_product_price"].(float64)
-		product_orders := data["product_order_list"].([]interface {})
+
+		product_orders := data["product_order_list"].([]interface{})
 		products_catalogue := data["products_catalogue"].(map[string]interface{})
+
 		sponsor_perc := data["sponsor_bonus"].(float64)
+
+		binary_bonus_pairing_ratios := data["binary_bonus_pairing_ratios"].(map[string]interface {})
+		binary_bonus_range := data["binary_bonus_range"].([]interface {})
+		//binary_bonus_list := data["binary_bonus_list"].([]interface {})
 		//binary_perc := data["binary_bonus"].(float64)
+
 		matching_percs := data["matching_bonus_list"].([]interface{})
+
 		capping_amount := data["capping_amount"].(float64)
 		rawCappingScope := data["capping_scope"].([]interface{})
 		cappingScopeMap := make(map[string]bool)
+		
 		var product_order_list []string
 
 		for _, v := range rawCappingScope {
@@ -227,20 +237,43 @@ func main() {
 			matching_perc_list = append(matching_perc_list, v.(float64))
 		}
 
+		binaryBonusPairingRatios := make(map[string]int)
+		for key, value := range binary_bonus_pairing_ratios {
+			binaryBonusPairingRatios[key] = int(value.(float64))
+		}
+
+		binaryBonusRange := []map[string]int{}
+		for _, item := range binary_bonus_range {
+			rangeMap := item.(map[string]interface{})
+			convertedMap := map[string]int{}
+			for key, value := range rangeMap {
+				convertedMap[key] = int(value.(float64))
+			}
+			binaryBonusRange = append(binaryBonusRange, convertedMap)
+		}
+
+		// binaryBonusList := []float64{}
+		// for _, item := range binary_bonus_list {
+		// 	binaryBonusList = append(binaryBonusList, item.(float64))
+		// }
+		
+		fmt.Println("###################")
+		fmt.Println(binaryBonusPairingRatios, binaryBonusRange)
+		fmt.Println("###################")
 		//num_cycles := num_cycles(float64(number_of_users), productCatalogueMap)
 		// //fmt.Println(num_cycles)
 		// productCatalogueMap := []int{3, 3, 4}
 		// for _, details := range productCatalogueMap {
 		// 	number_of_users := int(details["quantity"])
 		// 	build_tree(number_of_users, joining_package_fee, additional_product_price)
-			// for detail := range details{
-			// 	fmt.Println(details[detail])
-			//number_of_users := int(detail["quantity"])
-			//build_tree(number_of_users, joining_package_fee, additional_product_price)
-			// sponsor_bonus := set_get_sponsor_bonus(sponsor_perc, capping_amount, cappingScopeMap)
-			// binary_bonus := set_get_binary_bonus(binary_perc, capping_amount, cappingScopeMap)
-			// matching_bonus := set_get_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
-			// }
+		// for detail := range details{
+		// 	fmt.Println(details[detail])
+		//number_of_users := int(detail["quantity"])
+		//build_tree(number_of_users, joining_package_fee, additional_product_price)
+		// sponsor_bonus := set_get_sponsor_bonus(sponsor_perc, capping_amount, cappingScopeMap)
+		// binary_bonus := set_get_binary_bonus(binary_perc, capping_amount, cappingScopeMap)
+		// matching_bonus := set_get_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
+		// }
 		//}
 		var sponsor_bonus, binary_bonus, matching_bonus float64
 		members = []*Member{}
@@ -254,31 +287,13 @@ func main() {
 			for product := range product_order_list {
 				number_of_users := int(productCatalogueMap[product_order_list[product]]["quantity"])
 				joining_package_fee := productCatalogueMap[product_order_list[product]]["price"]
-				if total_num_of_users >= number_of_users{
+				if total_num_of_users >= number_of_users {
 					build_tree(number_of_users, joining_package_fee, additional_product_price)
 					total_num_of_users = total_num_of_users - number_of_users
-					// sponsor_bonus = set_get_sponsor_bonus(sponsor_perc, capping_amount, cappingScopeMap)
-					// binary_bonus = set_get_binary_bonus(binary_perc, capping_amount, cappingScopeMap)
-					// matching_bonus = set_get_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
-					// fmt.Println("##################")
-					// fmt.Println("for product", product_order_list[product])
-					// fmt.Println(sponsor_bonus)
-					// fmt.Println(binary_bonus)
-					// fmt.Println(matching_bonus)
-					// fmt.Println("##################")
-				}else{
+				} else {
 					number_of_users = total_num_of_users
 					build_tree(number_of_users, joining_package_fee, additional_product_price)
 					total_num_of_users = total_num_of_users - number_of_users
-					// sponsor_bonus = set_get_sponsor_bonus(sponsor_perc, capping_amount, cappingScopeMap)
-					// binary_bonus = set_get_binary_bonus(binary_perc, capping_amount, cappingScopeMap)
-					// matching_bonus = set_get_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
-					// fmt.Println("##################")
-					// fmt.Println("for product", product_order_list[product])
-					// fmt.Println(sponsor_bonus)
-					// fmt.Println(binary_bonus)
-					// fmt.Println(matching_bonus)
-					// fmt.Println("##################")
 					break
 				}
 			}
@@ -312,10 +327,10 @@ func main() {
 			// matching_bonus = set_get_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
 		}
 		cycle := 0
-		for _, members := range cycles_data{
+		for _, members := range cycles_data {
 			cycle = cycle + 1
 			fmt.Println("Cycle:", cycle)
-			for _, member := range members{
+			for _, member := range members {
 				fmt.Println("id:", member.ID)
 				if member.Parent != nil {
 					fmt.Println("Parent Member:", member.Parent.ID)
@@ -336,27 +351,27 @@ func main() {
 				fmt.Println("Sponsor Bonus:", member.SponsorBonus)
 			}
 		}
-		// for _, member := range members {
-		// 	fmt.Println("#################")
-		// 	fmt.Println("id:", member.ID)
-		// 	if member.Parent != nil {
-		// 		fmt.Println("Parent Member:", member.Parent.ID)
-		// 	} else {
-		// 		fmt.Println("Parent Member: nil")
-		// 	}
-		// 	if member.LeftMember != nil {
-		// 		fmt.Println("Left Member:", member.LeftMember.ID)
-		// 	} else {
-		// 		fmt.Println("Left Member: nil")
-		// 	}
-		// 	if member.RightMember != nil {
-		// 		fmt.Println("Right Member:", member.RightMember.ID)
-		// 	} else {
-		// 		fmt.Println("Right Member: nil")
-		// 	}
-		// 	fmt.Println("JPF:", member.Sale)
-		// 	fmt.Println("Sponsor Bonus:", member.SponsorBonus)
-		// }
+		for _, member := range members {
+			fmt.Println("#################")
+			fmt.Println("id:", member.ID)
+			if member.Parent != nil {
+				fmt.Println("Parent Member:", member.Parent.ID)
+			} else {
+				fmt.Println("Parent Member: nil")
+			}
+			if member.LeftMember != nil {
+				fmt.Println("Left Member:", member.LeftMember.ID)
+			} else {
+				fmt.Println("Left Member: nil")
+			}
+			if member.RightMember != nil {
+				fmt.Println("Right Member:", member.RightMember.ID)
+			} else {
+				fmt.Println("Right Member: nil")
+			}
+			fmt.Println("JPF:", member.Sale)
+			fmt.Println("Sponsor Bonus:", member.SponsorBonus)
+		}
 		fmt.Println("##################")
 		fmt.Println(sponsor_bonus)
 		fmt.Println(binary_bonus)
