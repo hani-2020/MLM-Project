@@ -102,7 +102,37 @@ func traverse(member *Member) float64 {
 	return currentSales + leftSales + rightSales
 }
 
-func set_get_binary_bonus(binary_percentage float64, capping_amount float64, capping_scope map[string]bool) float64 {
+// func set_get_binary_bonus(binary_percentage float64, capping_amount float64, capping_scope map[string]bool) float64 {
+// 	var total_bonus float64 = 0
+// 	for _, member := range members {
+// 		left_sales := 0.0
+// 		right_sales := 0.0
+// 		if member.LeftMember != nil {
+// 			left_sales = traverse(member.LeftMember)
+// 			member.LeftSales = left_sales
+// 		}
+// 		if member.RightMember != nil {
+// 			right_sales = traverse(member.RightMember)
+// 			member.RightSales = right_sales
+// 		}
+// 		binaryBonus := math.Min(float64(left_sales), float64(right_sales)) * binary_percentage / 100
+// 		if capping_scope["1"] && binaryBonus > capping_amount {
+// 			member.BinaryBonus = capping_amount
+// 		} else {
+// 			member.BinaryBonus = binaryBonus
+// 		}
+// 		carry_forward := left_sales - right_sales
+// 		if carry_forward > 0 {
+// 			member.LeftCarryForward = carry_forward
+// 		} else if carry_forward <= 0 {
+// 			member.RightCarryForward = carry_forward
+// 		}
+// 		total_bonus = total_bonus + member.BinaryBonus
+// 	}
+// 	return total_bonus
+// }
+
+func set_get_binary_bonus(binaryBonusPairingRatios map[string]int, binaryBonusRange []map[string]float64, capping_amount float64, capping_scope map[string]bool) float64 {
 	var total_bonus float64 = 0
 	for _, member := range members {
 		left_sales := 0.0
@@ -115,6 +145,15 @@ func set_get_binary_bonus(binary_percentage float64, capping_amount float64, cap
 			right_sales = traverse(member.RightMember)
 			member.RightSales = right_sales
 		}
+		left_bits := int(left_sales)/binaryBonusPairingRatios["left"]
+		right_bits := int(right_sales)/binaryBonusPairingRatios["right"]
+		var bits int
+		if left_bits>=right_bits{
+			bits = left_bits
+		}else{
+			bits = right_bits
+		}
+		fmt.Println(bits)
 		binaryBonus := math.Min(float64(left_sales), float64(right_sales)) * binary_percentage / 100
 		if capping_scope["1"] && binaryBonus > capping_amount {
 			member.BinaryBonus = capping_amount
@@ -242,20 +281,15 @@ func main() {
 			binaryBonusPairingRatios[key] = int(value.(float64))
 		}
 
-		binaryBonusRange := []map[string]int{}
+		binaryBonusRange := []map[string]float64{}
 		for _, item := range binary_bonus_range {
 			rangeMap := item.(map[string]interface{})
-			convertedMap := map[string]int{}
+			convertedMap := map[string]float64{}
 			for key, value := range rangeMap {
-				convertedMap[key] = int(value.(float64))
+				convertedMap[key] = float64(value.(float64))
 			}
 			binaryBonusRange = append(binaryBonusRange, convertedMap)
 		}
-
-		// binaryBonusList := []float64{}
-		// for _, item := range binary_bonus_list {
-		// 	binaryBonusList = append(binaryBonusList, item.(float64))
-		// }
 		
 		fmt.Println("###################")
 		fmt.Println(binaryBonusPairingRatios, binaryBonusRange)
