@@ -147,20 +147,22 @@ func set_get_binary_bonus(binaryBonusPairingRatios map[string]int, binaryBonusRa
 		}
 		left_bits := int(left_sales)/binaryBonusPairingRatios["left"]
 		right_bits := int(right_sales)/binaryBonusPairingRatios["right"]
-		var bits int
-		if left_bits>=right_bits{
-			bits = left_bits
-		}else{
-			bits = right_bits
+		bits := math.Min(float64(left_bits), float64(right_bits))
+		var binaryBonus float64
+		for i := range binaryBonusRange{
+			if bits >= binaryBonusRange[i]["min"] && bits <= binaryBonusRange[i]["max"] {
+				binary_percentage := binaryBonusRange[i]["bonus"]
+				binaryBonus = member.BinaryBonus + math.Min(float64(left_sales), float64(right_sales)) * binary_percentage / 100
+				break
+			}
 		}
-		fmt.Println(bits)
-		binaryBonus := math.Min(float64(left_sales), float64(right_sales)) * binary_percentage / 100
 		if capping_scope["1"] && binaryBonus > capping_amount {
 			member.BinaryBonus = capping_amount
 		} else {
 			member.BinaryBonus = binaryBonus
 		}
-		carry_forward := left_sales - right_sales
+		//figuring out carry forward and stuff
+		carry_forward := (left_sales - right_sales)*bits
 		if carry_forward > 0 {
 			member.LeftCarryForward = carry_forward
 		} else if carry_forward <= 0 {
@@ -316,6 +318,7 @@ func main() {
 		var cycles_data [][]*Member
 		var cycle_start_ids []int = []int{0}
 		cycle_num := 0
+		fmt.Println("###################start#######################")
 		for total_num_of_users > 0 {
 			cycle_num = cycle_num + 1
 			for product := range product_order_list {
@@ -360,6 +363,7 @@ func main() {
 			// binary_bonus = set_get_binary_bonus(binary_perc, capping_amount, cappingScopeMap)
 			// matching_bonus = set_get_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
 		}
+		fmt.Println("###################end#######################")
 		cycle := 0
 		for _, members := range cycles_data {
 			cycle = cycle + 1

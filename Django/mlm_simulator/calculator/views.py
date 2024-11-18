@@ -239,7 +239,7 @@ class Calculator(View):
                 min_val, max_val = map(int, parts[i].split("-"))
                 binary_bonus_dict.append({"min": min_val, "max": max_val, "bonus": binary_bonus_list[i]})
             else:
-                binary_bonus_dict.append({"min": int(parts[i]), "bonus": binary_bonus_list[i]})
+                binary_bonus_dict.append({"min": int(parts[i]), "max": 10**100,"bonus": binary_bonus_list[i]})
     
         if matching_bonus_string:
             matching_bonus_list = [float(value) for value in matching_bonus_string.split(",")]
