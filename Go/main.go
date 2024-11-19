@@ -139,20 +139,28 @@ func set_get_binary_bonus(binaryBonusPairingRatios map[string]int, binaryBonusRa
 		right_sales := 0.0
 		if member.LeftMember != nil {
 			left_sales = traverse(member.LeftMember)
-			member.LeftSales = left_sales
+			member.LeftSales = left_sales + member.LeftCarryForward
 		}
 		if member.RightMember != nil {
 			right_sales = traverse(member.RightMember)
-			member.RightSales = right_sales
+			member.RightSales = right_sales + member.RightCarryForward
 		}
 		left_bits := int(left_sales)/binaryBonusPairingRatios["left"]
 		right_bits := int(right_sales)/binaryBonusPairingRatios["right"]
 		bits := math.Min(float64(left_bits), float64(right_bits))
+		left_amount := bits * float64(binaryBonusPairingRatios["left"])
+		right_amount := bits * float64(binaryBonusPairingRatios["right"])
+		if member.LeftSales >= left_amount{
+			member.LeftCarryForward = member.LeftSales - left_amount
+		}
+		if member.RightSales >= right_amount{
+			member.RightCarryForward = member.RightSales - right_amount
+		}
 		var binaryBonus float64
 		for i := range binaryBonusRange{
 			if bits >= binaryBonusRange[i]["min"] && bits <= binaryBonusRange[i]["max"] {
 				binary_percentage := binaryBonusRange[i]["bonus"]
-				binaryBonus = member.BinaryBonus + math.Min(float64(left_sales), float64(right_sales)) * binary_percentage / 100
+				binaryBonus = member.BinaryBonus + math.Min(float64(member.LeftSales), float64(member.RightSales)) * binary_percentage / 100
 				break
 			}
 		}
@@ -161,13 +169,12 @@ func set_get_binary_bonus(binaryBonusPairingRatios map[string]int, binaryBonusRa
 		} else {
 			member.BinaryBonus = binaryBonus
 		}
-		//figuring out carry forward and stuff
-		carry_forward := (left_sales - right_sales)*bits
-		if carry_forward > 0 {
-			member.LeftCarryForward = carry_forward
-		} else if carry_forward <= 0 {
-			member.RightCarryForward = carry_forward
-		}
+		// carry_forward := (left_sales - right_sales)*bits
+		// if carry_forward > 0 {
+		// 	member.LeftCarryForward = carry_forward
+		// } else if carry_forward <= 0 {
+		// 	member.RightCarryForward = carry_forward
+		// }
 		total_bonus = total_bonus + member.BinaryBonus
 	}
 	return total_bonus
@@ -360,7 +367,7 @@ func main() {
 				copiedMembers = append(copiedMembers, copiedMember)
 			}
 			cycles_data = append(cycles_data, copiedMembers)
-			// binary_bonus = set_get_binary_bonus(binary_perc, capping_amount, cappingScopeMap)
+			binary_bonus = set_get_binary_bonus(binaryBonusPairingRatios, binaryBonusRange, capping_amount, cappingScopeMap)
 			// matching_bonus = set_get_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
 		}
 		fmt.Println("###################end#######################")
@@ -387,29 +394,30 @@ func main() {
 				}
 				fmt.Println("JPF:", member.Sale)
 				fmt.Println("Sponsor Bonus:", member.SponsorBonus)
+				fmt.Println("Binary Bonus:", member.BinaryBonus)
 			}
 		}
-		for _, member := range members {
-			fmt.Println("#################")
-			fmt.Println("id:", member.ID)
-			if member.Parent != nil {
-				fmt.Println("Parent Member:", member.Parent.ID)
-			} else {
-				fmt.Println("Parent Member: nil")
-			}
-			if member.LeftMember != nil {
-				fmt.Println("Left Member:", member.LeftMember.ID)
-			} else {
-				fmt.Println("Left Member: nil")
-			}
-			if member.RightMember != nil {
-				fmt.Println("Right Member:", member.RightMember.ID)
-			} else {
-				fmt.Println("Right Member: nil")
-			}
-			fmt.Println("JPF:", member.Sale)
-			fmt.Println("Sponsor Bonus:", member.SponsorBonus)
-		}
+		// for _, member := range members {
+		// 	fmt.Println("#################")
+		// 	fmt.Println("id:", member.ID)
+		// 	if member.Parent != nil {
+		// 		fmt.Println("Parent Member:", member.Parent.ID)
+		// 	} else {
+		// 		fmt.Println("Parent Member: nil")
+		// 	}
+		// 	if member.LeftMember != nil {
+		// 		fmt.Println("Left Member:", member.LeftMember.ID)
+		// 	} else {
+		// 		fmt.Println("Left Member: nil")
+		// 	}
+		// 	if member.RightMember != nil {
+		// 		fmt.Println("Right Member:", member.RightMember.ID)
+		// 	} else {
+		// 		fmt.Println("Right Member: nil")
+		// 	}
+		// 	fmt.Println("JPF:", member.Sale)
+		// 	fmt.Println("Sponsor Bonus:", member.SponsorBonus)
+		// }
 		fmt.Println("##################")
 		fmt.Println(sponsor_bonus)
 		fmt.Println(binary_bonus)
