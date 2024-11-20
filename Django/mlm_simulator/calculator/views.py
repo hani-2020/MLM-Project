@@ -201,7 +201,6 @@ class Calculator(View):
         form = BinaryForm(request.POST)
         if form.is_valid():
             number_of_users = form.cleaned_data['number_of_users']
-            # joining_package_fee = form.cleaned_data['joining_package_fee']
             additional_product_price = form.cleaned_data['additional_product_price']
 
             product_names = form.cleaned_data['product_names']
@@ -257,7 +256,6 @@ class Calculator(View):
             'sponsor_bonus': sponsor_bonus,
             'binary_bonus_pairing_ratios': binary_bonus_pairing_ratio_dict,
             'binary_bonus_range': binary_bonus_dict,
-            'binary_bonus': binary_bonus,
             'matching_bonus_list': matching_bonus_list,
             'capping_amount': capping_amount,
             'capping_scope': capping_scope
