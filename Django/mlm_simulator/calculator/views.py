@@ -251,7 +251,6 @@ class Calculator(View):
         ##################go stuff:BEGIN#########################
         input = {
             'number_of_users': number_of_users,
-            # 'joining_package_fee': joining_package_fee,
             'additional_product_price': additional_product_price,
             'product_order_list': product_names_list,
             'products_catalogue': products_catalogue,
