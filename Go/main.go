@@ -6,7 +6,6 @@ import (
 	"io"
 	"math"
 	"net/http"
-	//"reflect"
 )
 
 type Member struct {
@@ -102,36 +101,6 @@ func traverse(member *Member) float64 {
 	return currentSales + leftSales + rightSales
 }
 
-// func set_get_binary_bonus(binary_percentage float64, capping_amount float64, capping_scope map[string]bool) float64 {
-// 	var total_bonus float64 = 0
-// 	for _, member := range members {
-// 		left_sales := 0.0
-// 		right_sales := 0.0
-// 		if member.LeftMember != nil {
-// 			left_sales = traverse(member.LeftMember)
-// 			member.LeftSales = left_sales
-// 		}
-// 		if member.RightMember != nil {
-// 			right_sales = traverse(member.RightMember)
-// 			member.RightSales = right_sales
-// 		}
-// 		binaryBonus := math.Min(float64(left_sales), float64(right_sales)) * binary_percentage / 100
-// 		if capping_scope["1"] && binaryBonus > capping_amount {
-// 			member.BinaryBonus = capping_amount
-// 		} else {
-// 			member.BinaryBonus = binaryBonus
-// 		}
-// 		carry_forward := left_sales - right_sales
-// 		if carry_forward > 0 {
-// 			member.LeftCarryForward = carry_forward
-// 		} else if carry_forward <= 0 {
-// 			member.RightCarryForward = carry_forward
-// 		}
-// 		total_bonus = total_bonus + member.BinaryBonus
-// 	}
-// 	return total_bonus
-// }
-
 func set_get_binary_bonus(binaryBonusPairingRatios map[string]int, binaryBonusRange []map[string]float64, capping_amount float64, capping_scope map[string]bool) float64 {
 	var total_bonus float64 = 0
 	for _, member := range members {
@@ -165,12 +134,6 @@ func set_get_binary_bonus(binaryBonusPairingRatios map[string]int, binaryBonusRa
 		} else {
 			member.BinaryBonus = binaryBonus
 		}
-		// carry_forward := (left_sales - right_sales)*bits
-		// if carry_forward > 0 {
-		// 	member.LeftCarryForward = carry_forward
-		// } else if carry_forward <= 0 {
-		// 	member.RightCarryForward = carry_forward
-		// }
 		total_bonus = total_bonus + member.BinaryBonus
 	}
 	return total_bonus
@@ -237,7 +200,6 @@ func main() {
 		}
 
 		total_num_of_users := int(data["number_of_users"].(float64))
-		//joining_package_fee := data["joining_package_fee"].(float64)
 		additional_product_price := data["additional_product_price"].(float64)
 
 		product_orders := data["product_order_list"].([]interface{})
@@ -247,8 +209,6 @@ func main() {
 
 		binary_bonus_pairing_ratios := data["binary_bonus_pairing_ratios"].(map[string]interface{})
 		binary_bonus_range := data["binary_bonus_range"].([]interface{})
-		//binary_bonus_list := data["binary_bonus_list"].([]interface {})
-		//binary_perc := data["binary_bonus"].(float64)
 
 		matching_percs := data["matching_bonus_list"].([]interface{})
 
@@ -295,25 +255,6 @@ func main() {
 			}
 			binaryBonusRange = append(binaryBonusRange, convertedMap)
 		}
-
-		fmt.Println("###################")
-		fmt.Println(binaryBonusPairingRatios, binaryBonusRange)
-		fmt.Println("###################")
-		//num_cycles := num_cycles(float64(number_of_users), productCatalogueMap)
-		// //fmt.Println(num_cycles)
-		// productCatalogueMap := []int{3, 3, 4}
-		// for _, details := range productCatalogueMap {
-		// 	number_of_users := int(details["quantity"])
-		// 	build_tree(number_of_users, joining_package_fee, additional_product_price)
-		// for detail := range details{
-		// 	fmt.Println(details[detail])
-		//number_of_users := int(detail["quantity"])
-		//build_tree(number_of_users, joining_package_fee, additional_product_price)
-		// sponsor_bonus := set_get_sponsor_bonus(sponsor_perc, capping_amount, cappingScopeMap)
-		// binary_bonus := set_get_binary_bonus(binary_perc, capping_amount, cappingScopeMap)
-		// matching_bonus := set_get_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
-		// }
-		//}
 		var sponsor_bonus, binary_bonus, matching_bonus float64
 		members = []*Member{}
 		current_id = 1
@@ -401,27 +342,6 @@ func main() {
 				fmt.Println("Matching Bonus:", member.MatchingBonus)
 			}
 		}
-		// for _, member := range members {
-		// 	fmt.Println("#################")
-		// 	fmt.Println("id:", member.ID)
-		// 	if member.Parent != nil {
-		// 		fmt.Println("Parent Member:", member.Parent.ID)
-		// 	} else {
-		// 		fmt.Println("Parent Member: nil")
-		// 	}
-		// 	if member.LeftMember != nil {
-		// 		fmt.Println("Left Member:", member.LeftMember.ID)
-		// 	} else {
-		// 		fmt.Println("Left Member: nil")
-		// 	}
-		// 	if member.RightMember != nil {
-		// 		fmt.Println("Right Member:", member.RightMember.ID)
-		// 	} else {
-		// 		fmt.Println("Right Member: nil")
-		// 	}
-		// 	fmt.Println("JPF:", member.Sale)
-		// 	fmt.Println("Sponsor Bonus:", member.SponsorBonus)
-		// }
 		fmt.Println("##################")
 		fmt.Println(sponsor_bonus)
 		fmt.Println(binary_bonus)
