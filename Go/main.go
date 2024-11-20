@@ -145,22 +145,18 @@ func set_get_binary_bonus(binaryBonusPairingRatios map[string]int, binaryBonusRa
 			right_sales = traverse(member.RightMember)
 			member.RightSales = right_sales + member.RightCarryForward
 		}
-		left_bits := int(left_sales)/binaryBonusPairingRatios["left"]
-		right_bits := int(right_sales)/binaryBonusPairingRatios["right"]
+		left_bits := int(left_sales) / binaryBonusPairingRatios["left"]
+		right_bits := int(right_sales) / binaryBonusPairingRatios["right"]
 		bits := math.Min(float64(left_bits), float64(right_bits))
 		left_amount := bits * float64(binaryBonusPairingRatios["left"])
 		right_amount := bits * float64(binaryBonusPairingRatios["right"])
-		if member.LeftSales >= left_amount{
-			member.LeftCarryForward = member.LeftSales - left_amount
-		}
-		if member.RightSales >= right_amount{
-			member.RightCarryForward = member.RightSales - right_amount
-		}
+		member.LeftCarryForward = member.LeftSales - left_amount
+		member.RightCarryForward = member.RightSales - right_amount
 		var binaryBonus float64
-		for i := range binaryBonusRange{
+		for i := range binaryBonusRange {
 			if bits >= binaryBonusRange[i]["min"] && bits <= binaryBonusRange[i]["max"] {
 				binary_percentage := binaryBonusRange[i]["bonus"]
-				binaryBonus = member.BinaryBonus + math.Min(float64(member.LeftSales), float64(member.RightSales)) * binary_percentage / 100
+				binaryBonus = math.Min(float64(member.LeftSales), float64(member.RightSales))*binary_percentage/100
 				break
 			}
 		}
@@ -249,8 +245,8 @@ func main() {
 
 		sponsor_perc := data["sponsor_bonus"].(float64)
 
-		binary_bonus_pairing_ratios := data["binary_bonus_pairing_ratios"].(map[string]interface {})
-		binary_bonus_range := data["binary_bonus_range"].([]interface {})
+		binary_bonus_pairing_ratios := data["binary_bonus_pairing_ratios"].(map[string]interface{})
+		binary_bonus_range := data["binary_bonus_range"].([]interface{})
 		//binary_bonus_list := data["binary_bonus_list"].([]interface {})
 		//binary_perc := data["binary_bonus"].(float64)
 
@@ -259,7 +255,7 @@ func main() {
 		capping_amount := data["capping_amount"].(float64)
 		rawCappingScope := data["capping_scope"].([]interface{})
 		cappingScopeMap := make(map[string]bool)
-		
+
 		var product_order_list []string
 
 		for _, v := range rawCappingScope {
@@ -299,7 +295,7 @@ func main() {
 			}
 			binaryBonusRange = append(binaryBonusRange, convertedMap)
 		}
-		
+
 		fmt.Println("###################")
 		fmt.Println(binaryBonusPairingRatios, binaryBonusRange)
 		fmt.Println("###################")
@@ -344,6 +340,8 @@ func main() {
 			cycle_start_ids = append(cycle_start_ids, len(members))
 			starting_id := cycle_start_ids[cycle_num-1]
 			sponsor_bonus = set_get_sponsor_bonus(sponsor_perc, capping_amount, cappingScopeMap, starting_id)
+			binary_bonus = set_get_binary_bonus(binaryBonusPairingRatios, binaryBonusRange, capping_amount, cappingScopeMap)
+			matching_bonus = set_get_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
 			var copiedMembers []*Member
 			for _, member := range members {
 				copiedMember := &Member{
@@ -367,8 +365,9 @@ func main() {
 				copiedMembers = append(copiedMembers, copiedMember)
 			}
 			cycles_data = append(cycles_data, copiedMembers)
-			binary_bonus = set_get_binary_bonus(binaryBonusPairingRatios, binaryBonusRange, capping_amount, cappingScopeMap)
-			// matching_bonus = set_get_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
+			for _, member := range members {
+				member.MatchingBonus = 0
+			}
 		}
 		fmt.Println("###################end#######################")
 		cycle := 0
@@ -393,8 +392,13 @@ func main() {
 					fmt.Println("Right Member: nil")
 				}
 				fmt.Println("JPF:", member.Sale)
+				fmt.Println("Left Carry:", member.LeftCarryForward)
+				fmt.Println("Right Carry:", member.RightCarryForward)
+				fmt.Println("Left sales:", member.LeftSales)
+				fmt.Println("Right sales:", member.RightSales)
 				fmt.Println("Sponsor Bonus:", member.SponsorBonus)
 				fmt.Println("Binary Bonus:", member.BinaryBonus)
+				fmt.Println("Matching Bonus:", member.MatchingBonus)
 			}
 		}
 		// for _, member := range members {
