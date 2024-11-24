@@ -10,6 +10,7 @@ class BaseDetailCollectionForm(forms.Form):
     product_names = forms.CharField(max_length=255, required=False)
     product_quantities = forms.CharField(max_length=255, required=False)
     product_prices = forms.CharField(max_length=255, required=False)
+    capping_amount = forms.FloatField(required=False, initial=0)
     # sponsor_bonus_unit = forms.ChoiceField(choices=unit_field)
     # business_expenses_per_member = forms.FloatField()
     # business_expenses_unit = forms.ChoiceField(choices=unit_field)
@@ -23,6 +24,9 @@ class BinaryForm(BaseDetailCollectionForm):
     binary_bonus_pairing_ratio = forms.CharField(max_length=255, required=False)
     matching_bonus_per_level = forms.CharField(max_length=255, required=False)
     # matching_bonus_unit = forms.ChoiceField(choices=unit_field)
-    # matching_bonus_levels = forms.IntegerField()
-    capping_amount = forms.FloatField(required=False, initial=0)
     capping_scope = forms.MultipleChoiceField(choices=((1, 'Binary bonus'), (2, 'Matching bonus'), (3, 'Sponsor bonus')),widget=forms.CheckboxSelectMultiple,required=False)
+
+class UnilevelForm(BaseDetailCollectionForm):
+    capping_scope = forms.MultipleChoiceField(choices=((1, 'Level bonus'), (2, 'Sponsor bonus')),widget=forms.CheckboxSelectMultiple,required=False)
+    downlines_per_user = forms.IntegerField(required=True)
+    level_bonus_per_level = forms.CharField(max_length=255, required=False)

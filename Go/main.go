@@ -12,8 +12,29 @@ type Member struct {
 	ID                int
 	LeftMember        *Member
 	RightMember       *Member
+	Children		  []*Member
 	Position          string
 	Parent            *Member
+	Left              int
+	Right             int
+	Level             int
+	Sale              float64
+	SponsorBonus      float64
+	BinaryBonus       float64
+	LeftSales         float64
+	RightSales        float64
+	LeftCarryForward  float64
+	RightCarryForward float64
+	MatchingBonus     float64
+}
+
+type MemberExport struct {
+	ID                int
+	LeftMember        int
+	RightMember       int
+	Children		  []int
+	Position          string
+	Parent            int
 	Left              int
 	Right             int
 	Level             int
@@ -31,7 +52,49 @@ var members []*Member
 var current_id int = 1
 var queue []*Member
 
-func build_tree(num_users int, joining_package_fee float64, additional_product_price float64) {
+func build_unilevel_tree(num_users int, joining_package_fee float64, additional_product_price float64, downlines_per_user int){
+	num_users = current_id + num_users - 1
+	if num_users <= 0 {
+		return
+	}
+	if current_id == 1 {
+		root := &Member{ID: current_id, Parent: nil, Level: 1}
+		members = append(members, root)
+		queue = []*Member{root}
+		current_id = current_id + 1
+		num_users = num_users + 1
+	}
+	for current_id <= num_users {
+		current_member := queue[0]
+		if current_id <= num_users && len(current_member.Children)<downlines_per_user-1 {
+			child_member := &Member{
+				ID:       current_id,
+				Parent:   current_member,
+				Level:    current_member.Level + 1,
+				Sale:     joining_package_fee + additional_product_price,
+			}
+			current_member.Children = append(current_member.Children, child_member)
+			members = append(members, child_member)
+			queue = append(queue, child_member)
+			current_id = current_id + 1
+		}
+		if current_id <= num_users && len(current_member.Children)>=downlines_per_user-1 {
+			child_member := &Member{
+				ID:       current_id,
+				Parent:   current_member,
+				Level:    current_member.Level + 1,
+				Sale:     joining_package_fee + additional_product_price,
+			}
+			current_member.Children = append(current_member.Children, child_member)
+			members = append(members, child_member)
+			queue = append(queue, child_member)
+			current_id = current_id + 1
+			queue = queue[1:]
+		}
+	}
+}
+
+func build_binary_tree(num_users int, joining_package_fee float64, additional_product_price float64) {
 	num_users = current_id + num_users - 1
 	if num_users <= 0 {
 		return
@@ -171,23 +234,9 @@ func apply_matching_bonus(member *Member, parent *Member, matching_perc_list []f
 	apply_matching_bonus(member, parent, matching_perc_list, iterant, capping_amount, capping_scope)
 }
 
-// func num_cycles(number_of_users float64, products_catalogue map[string]map[string]float64) float64 {
-// 	cycles := 0.0
-// 	for number_of_users > 0 {
-// 		for _, v1 := range products_catalogue {
-// 			for key := range v1 {
-// 				if key == "quantity" {
-// 					number_of_users = number_of_users - v1["quantity"]
-// 					cycles = cycles + 1
-// 				}
-// 			}
-// 		}
-// 	}
-// 	return cycles
-// }
-
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	//for binary plan
+	http.HandleFunc("/binary-calc/", func(w http.ResponseWriter, r *http.Request) {
 		var data map[string]interface{}
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -259,21 +308,20 @@ func main() {
 		members = []*Member{}
 		current_id = 1
 		queue = []*Member{}
-		var cycles_data [][]*Member
+		var cycles_data [][]*MemberExport
 		var cycle_start_ids []int = []int{0}
 		cycle_num := 0
-		fmt.Println("###################start#######################")
 		for total_num_of_users > 0 {
 			cycle_num = cycle_num + 1
 			for product := range product_order_list {
 				number_of_users := int(productCatalogueMap[product_order_list[product]]["quantity"])
 				joining_package_fee := productCatalogueMap[product_order_list[product]]["price"]
 				if total_num_of_users >= number_of_users {
-					build_tree(number_of_users, joining_package_fee, additional_product_price)
+					build_binary_tree(number_of_users, joining_package_fee, additional_product_price)
 					total_num_of_users = total_num_of_users - number_of_users
 				} else {
 					number_of_users = total_num_of_users
-					build_tree(number_of_users, joining_package_fee, additional_product_price)
+					build_binary_tree(number_of_users, joining_package_fee, additional_product_price)
 					total_num_of_users = total_num_of_users - number_of_users
 					break
 				}
@@ -283,14 +331,20 @@ func main() {
 			sponsor_bonus = set_get_sponsor_bonus(sponsor_perc, capping_amount, cappingScopeMap, starting_id)
 			binary_bonus = set_get_binary_bonus(binaryBonusPairingRatios, binaryBonusRange, capping_amount, cappingScopeMap)
 			matching_bonus = set_get_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
-			var copiedMembers []*Member
+			var copiedMembers []*MemberExport
 			for _, member := range members {
-				copiedMember := &Member{
+				leftmember := -1
+				rightmember := -1
+				parent := -1
+				if member.LeftMember != nil {leftmember = member.LeftMember.ID}
+				if member.RightMember != nil {rightmember = member.RightMember.ID}
+				if member.Parent != nil {parent = member.Parent.ID}
+				copiedMember := &MemberExport{
 					ID:                member.ID,
-					LeftMember:        member.LeftMember,
-					RightMember:       member.RightMember,
+					LeftMember:        leftmember,
+					RightMember:       rightmember,
 					Position:          member.Position,
-					Parent:            member.Parent,
+					Parent:            parent,
 					Left:              member.Left,
 					Right:             member.Right,
 					Level:             member.Level,
@@ -310,28 +364,15 @@ func main() {
 				member.MatchingBonus = 0
 			}
 		}
-		fmt.Println("###################end#######################")
 		cycle := 0
 		for _, members := range cycles_data {
 			cycle = cycle + 1
 			fmt.Println("Cycle:", cycle)
 			for _, member := range members {
 				fmt.Println("id:", member.ID)
-				if member.Parent != nil {
-					fmt.Println("Parent Member:", member.Parent.ID)
-				} else {
-					fmt.Println("Parent Member: nil")
-				}
-				if member.LeftMember != nil {
-					fmt.Println("Left Member:", member.LeftMember.ID)
-				} else {
-					fmt.Println("Left Member: nil")
-				}
-				if member.RightMember != nil {
-					fmt.Println("Right Member:", member.RightMember.ID)
-				} else {
-					fmt.Println("Right Member: nil")
-				}
+				fmt.Println("Parent Member:", member.Parent)
+				fmt.Println("Left Member:", member.LeftMember)
+				fmt.Println("Right Member:", member.RightMember)
 				fmt.Println("JPF:", member.Sale)
 				fmt.Println("Left Carry:", member.LeftCarryForward)
 				fmt.Println("Right Carry:", member.RightCarryForward)
@@ -347,6 +388,74 @@ func main() {
 		fmt.Println(binary_bonus)
 		fmt.Println(matching_bonus)
 		fmt.Println("##################")
+	})
+
+	//for unilevel plan
+	http.HandleFunc("/unilevel-calc/", func(w http.ResponseWriter, r *http.Request) {
+		var data map[string]interface{}
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, "Failed to read request body", http.StatusBadRequest)
+			return
+		}
+		if err := json.Unmarshal(body, &data); err != nil {
+			http.Error(w, "Invalid JSON", http.StatusBadRequest)
+			return
+		}
+
+		total_num_of_users := int(data["number_of_users"].(float64))
+		downlines_per_user := int(data["downlines_per_user"].(float64))
+		additional_product_price := data["additional_product_price"].(float64)
+
+		product_orders := data["product_order_list"].([]interface{})
+		products_catalogue := data["products_catalogue"].(map[string]interface{})
+
+		sponsor_perc := data["sponsor_bonus"].(float64)
+		level_percs := data["level_bonus"].([]interface{})
+		var level_percs_list []float64
+		for _, v := range level_percs {
+			level_percs_list = append(level_percs_list, v.(float64))
+		}
+
+		capping_amount := data["capping_amount"].(float64)
+		rawCappingScope := data["capping_scope"].([]interface{})
+		cappingScopeMap := make(map[string]bool)
+
+		var product_order_list []string
+
+		for _, v := range rawCappingScope {
+			cappingScopeMap[v.(string)] = true
+		}
+
+		for product_order := range product_orders {
+			product_order_list = append(product_order_list, product_orders[product_order].(string))
+		}
+
+		productCatalogueMap := make(map[string]map[string]float64)
+		for k, v := range products_catalogue {
+			product_map := v.(map[string]interface{})
+			detail_map := make(map[string]float64)
+			for k2, v2 := range product_map {
+				detail_map[k2] = v2.(float64)
+			}
+			productCatalogueMap[k] = detail_map
+		}
+		fmt.Println(total_num_of_users, downlines_per_user,additional_product_price, product_order_list, productCatalogueMap, sponsor_perc, level_percs_list, capping_amount, cappingScopeMap)
+		members = []*Member{}
+		current_id = 1
+		queue = []*Member{}
+		build_unilevel_tree(total_num_of_users, 1000.00, additional_product_price, downlines_per_user)
+		for _, member := range members {
+			fmt.Println("User ID",member.ID)
+			if member.Parent != nil {
+				fmt.Println("Parent ID", member.Parent.ID)
+			}else{
+				fmt.Println("Parent ID", nil)
+			}
+			for _, v := range member.Children {
+				fmt.Println("Downline ID", v.ID)
+			}
+		}
 	})
 	http.ListenAndServe(":8080", nil)
 }
