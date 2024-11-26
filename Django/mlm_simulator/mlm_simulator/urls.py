@@ -21,5 +21,8 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.Home, name='home'),
-    path('calculator/', include('calculator.urls'))
+    # path('calculator/', include('calculator.urls')),
+    path('binary/', views.BinaryCalculator.as_view(), name='binary-calculator'),
+    path('unilevel/', views.UnilevelCalculator.as_view(), name='unilevel-calculator'),
+    path('result/', views.Result.as_view(), name='result')
 ]

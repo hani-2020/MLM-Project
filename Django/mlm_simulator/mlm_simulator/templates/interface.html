@@ -70,6 +70,7 @@
 <body>
 
 <div class="container">
+    <h1>{{test}}</h1>
     <h2>MLM Plan Calculator</h2>
     <form id="mlmCalculator">
         <!-- Base Currency -->
@@ -77,6 +78,10 @@
             <div class="col-md-6">
                 <label for="numUsers" class="form-label">Number of Users</label>
                 <input type="number" class="form-control" id="numUsers" placeholder="Enter number of users">
+            </div>
+            <div class="col-md-6">
+                <label for="numUsers" class="form-label">Expense per user</label>
+                <input type="number" class="form-control" id="expenseUser" placeholder="Expense per user">
             </div>
         </div>
         <div class="row g-3">
@@ -104,12 +109,12 @@
             <div class="plan-card mt-4 p-4 product-entry">
                 <div class="row mb-3">
                     <div class="col-12">
-                        <input type="text" class="form-control form-control-lg" id="productName" placeholder="Product Name">
+                        <input type="text" class="form-control form-control-lg productName" id="productName" placeholder="Product Name">
                     </div>
                 </div>
                 <div class="row g-3">
                     <div class="col-md-3">
-                        <input type="number" class="form-control" id="productPrice" placeholder="Price">
+                        <input type="text" class="form-control productPrice" id="productPrice" placeholder="Price">
                         <label for="productPrice" class="form-label small text-muted">Price</label>
                     </div>
                     <div class="col-md-3">
@@ -117,7 +122,7 @@
                         <label for="productBV" class="form-label small text-muted">Business Volume</label>
                     </div>
                     <div class="col-md-3">
-                        <input type="number" class="form-control" id="productQuantity" placeholder="Quantity">
+                        <input type="text" class="form-control productQuantity" id="productQuantity" placeholder="Quantity">
                         <label for="productQuantity" class="form-label small text-muted">Quantity</label>
                     </div>
                 </div>
@@ -130,8 +135,12 @@
             <h5>BINARY MLM Plan</h5>
             <div class="row g-3">
                 <div class="col-md-4">
+                    <label for="binaryPercentage" class="form-label">Binary Bonus Ranges</label>
+                    <input type="text" class="form-control" id="binaryRange" placeholder="Binary %">
+                </div>
+                <div class="col-md-4">
                     <label for="binaryPercentage" class="form-label">Binary %</label>
-                    <input type="number" class="form-control" id="binaryPercentage" placeholder="Binary %">
+                    <input type="text" class="form-control" id="binaryPercentage" placeholder="Binary %">
                 </div>
                 <div class="col-md-4">
                     <label for="binaryRatio" class="form-label">Ratio</label>
@@ -150,7 +159,7 @@
                 </div>
                 <div class="col-md-6">
                     <label for="matchingBonus" class="form-label">Matching Bonus (%)</label>
-                    <input type="number" class="form-control" id="matchingBonus" placeholder="Matching Bonus %">
+                    <input type="text" class="form-control" id="matchingBonus" placeholder="Matching Bonus %">
                 </div>
             </div>
         </div>
@@ -196,15 +205,15 @@
                     <label class="form-label">Capping Scope</label>
                     <div class="d-flex">
                         <div class="form-check me-3">
-                            <input class="form-check-input" type="checkbox" id="binaryBonus" value="Binary Bonus">
+                            <input class="form-check-input" type="checkbox" id="binaryBonus" value="1">
                             <label class="form-check-label" for="binaryBonus">Binary Bonus</label>
                         </div>
                         <div class="form-check me-3">
-                            <input class="form-check-input" type="checkbox" id="sponsorBonusScope" value="Sponsor Bonus">
+                            <input class="form-check-input" type="checkbox" id="sponsorBonusScope" value="2">
                             <label class="form-check-label" for="sponsorBonusScope">Sponsor Bonus</label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="matchingBonusScope" value="Matching Bonus">
+                            <input class="form-check-input" type="checkbox" id="matchingBonusScope" value="3">
                             <label class="form-check-label" for="matchingBonusScope">Matching Bonus</label>
                         </div>
                     </div>
@@ -256,17 +265,21 @@
 
     document.getElementById('simulateBtn').addEventListener('click', function() {
         // Grab all the input values
+        const numUsers = document.getElementById('numUsers').value;
+        const expenseUser = document.getElementById('expenseUser').value
         const baseCurrency = document.getElementById('baseCurrency').value;
-        const productName = document.getElementById('productName').value;
-        const productPrice = document.getElementById('productPrice').value;
+        const productName = Array.from(document.querySelectorAll('.productName')).map(input => input.value);
+        const productPrice = Array.from(document.querySelectorAll('.productPrice')).map(input => input.value);
         const productBV = document.getElementById('productBV').value;
-        const productQuantity = document.getElementById('productQuantity').value;
-        const productCycle = document.getElementById('productCycle').value;
+        const productQuantity = Array.from(document.querySelectorAll('.productQuantity')).map(input => input.value);
 
         // Binary form values
+        const binaryRange = document.getElementById('binaryRange') ? document.getElementById('binaryRange').value : null;
         const binaryPercentage = document.getElementById('binaryPercentage') ? document.getElementById('binaryPercentage').value : null;
         const binaryRatio = document.getElementById('binaryRatio') ? document.getElementById('binaryRatio').value : null;
         const binaryOption = document.getElementById('binaryOption') ? document.getElementById('binaryOption').value : null;
+        const sponsorBonus = document.getElementById('sponsorBonus') ? document.getElementById('sponsorBonus').value : null;
+        const matchingBonus = document.getElementById('matchingBonus') ? document.getElementById('matchingBonus').value : null;
 
         // Unilevel form values
         const unilevelPercentage = document.getElementById('unilevelPercentage') ? document.getElementById('unilevelPercentage').value : null;
@@ -281,36 +294,53 @@
         const binaryBonusChecked = document.getElementById('binaryBonus').checked;
         const sponsorBonusChecked = document.getElementById('sponsorBonusScope').checked;
         const matchingBonusChecked = document.getElementById('matchingBonusScope').checked;
-
-        // Create the result message
-        let resultMessage = `
-            <strong>MLM Plan Details:</strong><br>
-            Base Currency: ${baseCurrency}<br>
-            Product Name: ${productName}<br>
-            Price: ${productPrice}<br>
-            Business Volume: ${productBV}<br>
-            Quantity: ${productQuantity}<br>
-            Cycle: ${productCycle}<br><br>
-        `;
-
-        if (binaryPercentage) {
-            resultMessage += `<strong>Binary MLM Plan:</strong><br> Binary Percentage: ${binaryPercentage}%<br> Ratio: ${binaryRatio}<br> Bonus Option: ${binaryOption}<br><br>`;
+        const cappingScope = []
+        if (sponsorBonusChecked){
+            cappingScope.push(3)
+        }
+        if (binaryBonusChecked){
+            cappingScope.push(1)
+        }
+        if (matchingBonusChecked){
+            cappingScope.push(2)
         }
 
-        if (unilevelPercentage) {
-            resultMessage += `<strong>Unilevel MLM Plan:</strong><br> Unilevel Percentage: ${unilevelPercentage}%<br> Sponsor Bonus: ${unilevelSponsorBonus}%<br><br>`;
-        }
+        if (!document.getElementById('binaryForm').classList.contains('hidden')) {
+            const formData = new URLSearchParams();
+            formData.append('number_of_users', numUsers);
+            formData.append('business_expenses_per_member', expenseUser);
+            formData.append('additional_product_price', '0');
+            formData.append('product_names', productName);
+            formData.append('product_prices', productPrice);
+            formData.append('product_quantities', productQuantity);
+            formData.append('sponsor_bonus', sponsorBonus);
+            formData.append('binary_bonus_range', binaryRange);
+            formData.append('binary_bonus', binaryPercentage);
+            formData.append('binary_bonus_pairing_ratio', binaryRatio);
+            formData.append('matching_bonus_per_level', matchingBonus);
+            formData.append('capping_amount', cappingLimit);
+            formData.append('capping_scope', cappingScope);
+            fetch('http://localhost:8000/binary/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: formData.toString()
+                })
+                .then(response => {
+                    
+                    window.location.href = response.url;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        // else if(!document.getElementById('unilevelForm').classList.contains('hidden')){
 
-        if (matrixPercentage) {
-            resultMessage += `<strong>Matrix MLM Plan:</strong><br> Matrix Percentage: ${matrixPercentage}%<br> Sponsor Bonus: ${matrixSponsorBonus}%<br><br>`;
-        }
+        // }
+        // else if(!document.getElementById('matrixForm').classList.contains('hidden')){
 
-        resultMessage += `<strong>Capping Limit:</strong><br> Capping Limit: ${cappingLimit}<br><br>`;
-
-        resultMessage += `<strong>Capping Scope:</strong><br> Binary Bonus: ${binaryBonusChecked ? 'Yes' : 'No'}<br> Sponsor Bonus: ${sponsorBonusChecked ? 'Yes' : 'No'}<br> Matching Bonus: ${matchingBonusChecked ? 'Yes' : 'No'}<br>`;
-
-        // Show result in an alert or in a specific div
-        alert(resultMessage); // Or replace this line to show results in a div
+        // }
     });
 </script>
 

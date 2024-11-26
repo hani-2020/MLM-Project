@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MLM Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>MLM Data Pie Chart</h1>
+    
+    <!-- Pie chart container -->
+    <canvas id="myPieChart" width="400" height="400"></canvas>
+
+    <script>
+        // Define the data structure that will be passed from Django views
+        const data = {
+            total_expense: {{ total_expense }},
+            total_revenue: {{ total_revenue }},
+            total_profit: {{ total_profit }},
+            total_binary_bonus: {{ total_binary_bonus }},
+            total_sponsor_bonus: {{ total_sponsor_bonus }},
+            total_matching_bonus: {{ total_matching_bonus }}
+        };
+
+        
+        const labels = ['Total Expense', 'Total Revenue', 'Total Profit', 'Total Binary Bonus', 'Total Sponsor Bonus', 'Total Matching Bonus'];
+        const values = [data.total_expense, data.total_revenue, data.total_profit, data.total_binary_bonus, data.total_sponsor_bonus, data.total_matching_bonus];
+
+        
+        const ctx = document.getElementById('myPieChart').getContext('2d');
+        const myPieChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#FF9F40', '#C2C2C2'],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return tooltipItem.label + ':' + tooltipItem.raw.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

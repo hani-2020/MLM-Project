@@ -29,23 +29,46 @@ type Member struct {
 }
 
 type MemberExport struct {
-	ID                int
-	LeftMember        int
-	RightMember       int
-	Children		  []int
-	Position          string
-	Parent            int
-	Left              int
-	Right             int
-	Level             int
-	Sale              float64
-	SponsorBonus      float64
-	BinaryBonus       float64
-	LeftSales         float64
-	RightSales        float64
-	LeftCarryForward  float64
-	RightCarryForward float64
-	MatchingBonus     float64
+	ID                int      `json:"id"`
+	LeftMember        int      `json:"left_member"`
+	RightMember       int      `json:"right_member"`
+	Children          []int    `json:"children"`
+	Position          string   `json:"position"`
+	Parent            int      `json:"parent"`
+	Left              int      `json:"left"`
+	Right             int      `json:"right"`
+	Level             int      `json:"level"`
+	Sale              float64  `json:"sale"`
+	SponsorBonus      float64  `json:"sponsor_bonus"`
+	BinaryBonus       float64  `json:"binary_bonus"`
+	LeftSales         float64  `json:"left_sales"`
+	RightSales        float64  `json:"right_sales"`
+	LeftCarryForward  float64  `json:"left_carry_forward"`
+	RightCarryForward float64  `json:"right_carry_forward"`
+	MatchingBonus     float64  `json:"matching_bonus"`
+}
+
+type ExportCycleData struct {
+	NumberUsers   int           `json:"number_users"`
+	Expense       float64       `json:"expense"`
+	Revenue       float64       `json:"revenue"`
+	Profit        float64       `json:"profit"`
+	Cycle         int           `json:"cycle"`
+	BinaryBonus   float64       `json:"binary_bonus"`
+	MatchingBonus float64       `json:"matching_bonus"`
+	SponsorBonus  float64       `json:"sponsor_bonus"`
+	MemberData    []MemberExport `json:"member_data"`
+}
+
+type ExportData struct {
+	TotalExpense       float64          `json:"total_expense"`
+	TotalRevenue       float64          `json:"total_revenue"`
+	TotalProfit        float64          `json:"total_profit"`
+	TotalCycles        int              `json:"total_cycles"`
+	TotalBinaryBonus   float64          `json:"total_binary_bonus"`
+	TotalSponsorBonus  float64          `json:"total_sponsor_bonus"`
+	TotalMatchingBonus float64          `json:"total_matching_bonus"`
+	CycleData          []ExportCycleData `json:"cycle_data"`
 }
 
 var members []*Member
@@ -249,6 +272,7 @@ func main() {
 		}
 
 		total_num_of_users := int(data["number_of_users"].(float64))
+		expense_per_member := data["expenses_per_member"].(float64)
 		additional_product_price := data["additional_product_price"].(float64)
 
 		product_orders := data["product_order_list"].([]interface{})
@@ -304,14 +328,16 @@ func main() {
 			}
 			binaryBonusRange = append(binaryBonusRange, convertedMap)
 		}
-		var sponsor_bonus, binary_bonus, matching_bonus float64
 		members = []*Member{}
 		current_id = 1
 		queue = []*Member{}
-		var cycles_data [][]*MemberExport
+		var totalExpense, totalRevenue, totalBinaryBonus, totalMatchingBonus, totalSponsorBonus float64
+		var cycles_data [][]MemberExport
+		var cycleList []ExportCycleData
 		var cycle_start_ids []int = []int{0}
 		cycle_num := 0
 		for total_num_of_users > 0 {
+			var sponsor_bonus, binary_bonus, matching_bonus float64
 			cycle_num = cycle_num + 1
 			for product := range product_order_list {
 				number_of_users := int(productCatalogueMap[product_order_list[product]]["quantity"])
@@ -331,15 +357,17 @@ func main() {
 			sponsor_bonus = set_get_sponsor_bonus(sponsor_perc, capping_amount, cappingScopeMap, starting_id)
 			binary_bonus = set_get_binary_bonus(binaryBonusPairingRatios, binaryBonusRange, capping_amount, cappingScopeMap)
 			matching_bonus = set_get_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
-			var copiedMembers []*MemberExport
+			var copiedMembers []MemberExport
+			var revenue float64
 			for _, member := range members {
+				revenue = revenue + member.Sale
 				leftmember := -1
 				rightmember := -1
 				parent := -1
 				if member.LeftMember != nil {leftmember = member.LeftMember.ID}
 				if member.RightMember != nil {rightmember = member.RightMember.ID}
 				if member.Parent != nil {parent = member.Parent.ID}
-				copiedMember := &MemberExport{
+				copiedMember := MemberExport{
 					ID:                member.ID,
 					LeftMember:        leftmember,
 					RightMember:       rightmember,
@@ -359,35 +387,48 @@ func main() {
 				}
 				copiedMembers = append(copiedMembers, copiedMember)
 			}
+			expense := expense_per_member*float64(len(copiedMembers))
+			totalExpense = totalExpense + expense
+			totalRevenue = totalRevenue + revenue
+			totalBinaryBonus = totalBinaryBonus + binary_bonus
+			totalSponsorBonus = totalSponsorBonus + sponsor_bonus
+			totalMatchingBonus = totalMatchingBonus + matching_bonus
+			exportCycleData := ExportCycleData{
+				NumberUsers: len(copiedMembers),
+				Expense: expense,
+				Revenue: revenue,
+				Profit: revenue - expense,
+				Cycle: cycle_num,
+				BinaryBonus: binary_bonus,
+				SponsorBonus: sponsor_bonus,
+				MatchingBonus: matching_bonus,
+				MemberData:  copiedMembers,
+			}
+			cycleList = append(cycleList, exportCycleData)
 			cycles_data = append(cycles_data, copiedMembers)
+
 			for _, member := range members {
 				member.MatchingBonus = 0
 			}
 		}
-		cycle := 0
-		for _, members := range cycles_data {
-			cycle = cycle + 1
-			fmt.Println("Cycle:", cycle)
-			for _, member := range members {
-				fmt.Println("id:", member.ID)
-				fmt.Println("Parent Member:", member.Parent)
-				fmt.Println("Left Member:", member.LeftMember)
-				fmt.Println("Right Member:", member.RightMember)
-				fmt.Println("JPF:", member.Sale)
-				fmt.Println("Left Carry:", member.LeftCarryForward)
-				fmt.Println("Right Carry:", member.RightCarryForward)
-				fmt.Println("Left sales:", member.LeftSales)
-				fmt.Println("Right sales:", member.RightSales)
-				fmt.Println("Sponsor Bonus:", member.SponsorBonus)
-				fmt.Println("Binary Bonus:", member.BinaryBonus)
-				fmt.Println("Matching Bonus:", member.MatchingBonus)
-			}
+		exportData := ExportData{
+			TotalExpense: totalExpense,
+			TotalRevenue: totalRevenue,
+			TotalProfit: totalRevenue - totalExpense,
+			TotalCycles: cycle_num,
+			TotalBinaryBonus: totalBinaryBonus,
+			TotalSponsorBonus: totalSponsorBonus,
+			TotalMatchingBonus: totalMatchingBonus,
+			CycleData: cycleList,
 		}
-		fmt.Println("##################")
-		fmt.Println(sponsor_bonus)
-		fmt.Println(binary_bonus)
-		fmt.Println(matching_bonus)
-		fmt.Println("##################")
+		response, err := json.Marshal(exportData)
+		if err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(response)
 	})
 
 	//for unilevel plan
@@ -444,18 +485,49 @@ func main() {
 		members = []*Member{}
 		current_id = 1
 		queue = []*Member{}
-		build_unilevel_tree(total_num_of_users, 1000.00, additional_product_price, downlines_per_user)
-		for _, member := range members {
-			fmt.Println("User ID",member.ID)
-			if member.Parent != nil {
-				fmt.Println("Parent ID", member.Parent.ID)
-			}else{
-				fmt.Println("Parent ID", nil)
+		//var cycles_data [][]*MemberExport
+		//var cycle_start_ids []int = []int{0}
+		cycle_num := 0
+		for total_num_of_users > 0 {
+			fmt.Println("###############cycle starts################")
+			cycle_num = cycle_num + 1
+			for product := range product_order_list {
+				number_of_users := int(productCatalogueMap[product_order_list[product]]["quantity"])
+				joining_package_fee := productCatalogueMap[product_order_list[product]]["price"]
+				if total_num_of_users >= number_of_users {
+					build_unilevel_tree(number_of_users, joining_package_fee, additional_product_price, downlines_per_user)
+					total_num_of_users = total_num_of_users - number_of_users
+				} else {
+					number_of_users = total_num_of_users
+					build_unilevel_tree(number_of_users, joining_package_fee, additional_product_price, downlines_per_user)
+					total_num_of_users = total_num_of_users - number_of_users
+					break
+				}
 			}
-			for _, v := range member.Children {
-				fmt.Println("Downline ID", v.ID)
+			for _, member := range members {
+				fmt.Println("###############user starts################")
+				fmt.Println("User ID",member.ID)
+				if member.Parent != nil {
+					fmt.Println("Parent ID", member.Parent.ID)
+				}else{
+					fmt.Println("Parent ID", nil)
+				}
+				for _, v := range member.Children {
+					fmt.Println("Downline ID", v.ID)
+				}
 			}
 		}
+		// for _, member := range members {
+		// 	fmt.Println("User ID",member.ID)
+		// 	if member.Parent != nil {
+		// 		fmt.Println("Parent ID", member.Parent.ID)
+		// 	}else{
+		// 		fmt.Println("Parent ID", nil)
+		// 	}
+		// 	for _, v := range member.Children {
+		// 		fmt.Println("Downline ID", v.ID)
+		// 	}
+		// }
 	})
 	http.ListenAndServe(":8080", nil)
 }
