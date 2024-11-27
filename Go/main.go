@@ -12,7 +12,7 @@ type Member struct {
 	ID                int
 	LeftMember        *Member
 	RightMember       *Member
-	Children		  []*Member
+	Children          []*Member
 	Position          string
 	Parent            *Member
 	Left              int
@@ -28,46 +28,46 @@ type Member struct {
 	MatchingBonus     float64
 }
 
-type MemberExport struct {
-	ID                int      `json:"id"`
-	LeftMember        int      `json:"left_member"`
-	RightMember       int      `json:"right_member"`
-	Children          []int    `json:"children"`
-	Position          string   `json:"position"`
-	Parent            int      `json:"parent"`
-	Left              int      `json:"left"`
-	Right             int      `json:"right"`
-	Level             int      `json:"level"`
-	Sale              float64  `json:"sale"`
-	SponsorBonus      float64  `json:"sponsor_bonus"`
-	BinaryBonus       float64  `json:"binary_bonus"`
-	LeftSales         float64  `json:"left_sales"`
-	RightSales        float64  `json:"right_sales"`
-	LeftCarryForward  float64  `json:"left_carry_forward"`
-	RightCarryForward float64  `json:"right_carry_forward"`
-	MatchingBonus     float64  `json:"matching_bonus"`
-}
+// type MemberExport struct {
+// 	ID                int     `json:"id"`
+// 	LeftMember        int     `json:"left_member"`
+// 	RightMember       int     `json:"right_member"`
+// 	Children          []int   `json:"children"`
+// 	Position          string  `json:"position"`
+// 	Parent            int     `json:"parent"`
+// 	Left              int     `json:"left"`
+// 	Right             int     `json:"right"`
+// 	Level             int     `json:"level"`
+// 	Sale              float64 `json:"sale"`
+// 	SponsorBonus      float64 `json:"sponsor_bonus"`
+// 	BinaryBonus       float64 `json:"binary_bonus"`
+// 	LeftSales         float64 `json:"left_sales"`
+// 	RightSales        float64 `json:"right_sales"`
+// 	LeftCarryForward  float64 `json:"left_carry_forward"`
+// 	RightCarryForward float64 `json:"right_carry_forward"`
+// 	MatchingBonus     float64 `json:"matching_bonus"`
+// }
 
 type ExportCycleData struct {
-	NumberUsers   int           `json:"number_users"`
-	Expense       float64       `json:"expense"`
-	Revenue       float64       `json:"revenue"`
-	Profit        float64       `json:"profit"`
-	Cycle         int           `json:"cycle"`
-	BinaryBonus   float64       `json:"binary_bonus"`
-	MatchingBonus float64       `json:"matching_bonus"`
-	SponsorBonus  float64       `json:"sponsor_bonus"`
-	MemberData    []MemberExport `json:"member_data"`
+	NumberUsers   int            `json:"number_users"`
+	Expense       float64        `json:"expense"`
+	Revenue       float64        `json:"revenue"`
+	Profit        float64        `json:"profit"`
+	Cycle         int            `json:"cycle"`
+	BinaryBonus   float64        `json:"binary_bonus"`
+	MatchingBonus float64        `json:"matching_bonus"`
+	SponsorBonus  float64        `json:"sponsor_bonus"`
+	// MemberData    []MemberExport `json:"member_data"`
 }
 
 type ExportData struct {
-	TotalExpense       float64          `json:"total_expense"`
-	TotalRevenue       float64          `json:"total_revenue"`
-	TotalProfit        float64          `json:"total_profit"`
-	TotalCycles        int              `json:"total_cycles"`
-	TotalBinaryBonus   float64          `json:"total_binary_bonus"`
-	TotalSponsorBonus  float64          `json:"total_sponsor_bonus"`
-	TotalMatchingBonus float64          `json:"total_matching_bonus"`
+	TotalExpense       float64           `json:"total_expense"`
+	TotalRevenue       float64           `json:"total_revenue"`
+	TotalProfit        float64           `json:"total_profit"`
+	TotalCycles        int               `json:"total_cycles"`
+	TotalBinaryBonus   float64           `json:"total_binary_bonus"`
+	TotalSponsorBonus  float64           `json:"total_sponsor_bonus"`
+	TotalMatchingBonus float64           `json:"total_matching_bonus"`
 	CycleData          []ExportCycleData `json:"cycle_data"`
 }
 
@@ -75,7 +75,7 @@ var members []*Member
 var current_id int = 1
 var queue []*Member
 
-func build_unilevel_tree(num_users int, joining_package_fee float64, additional_product_price float64, downlines_per_user int){
+func build_unilevel_tree(num_users int, joining_package_fee float64, additional_product_price float64, downlines_per_user int) {
 	num_users = current_id + num_users - 1
 	if num_users <= 0 {
 		return
@@ -89,24 +89,24 @@ func build_unilevel_tree(num_users int, joining_package_fee float64, additional_
 	}
 	for current_id <= num_users {
 		current_member := queue[0]
-		if current_id <= num_users && len(current_member.Children)<downlines_per_user-1 {
+		if current_id <= num_users && len(current_member.Children) < downlines_per_user-1 {
 			child_member := &Member{
-				ID:       current_id,
-				Parent:   current_member,
-				Level:    current_member.Level + 1,
-				Sale:     joining_package_fee + additional_product_price,
+				ID:     current_id,
+				Parent: current_member,
+				Level:  current_member.Level + 1,
+				Sale:   joining_package_fee + additional_product_price,
 			}
 			current_member.Children = append(current_member.Children, child_member)
 			members = append(members, child_member)
 			queue = append(queue, child_member)
 			current_id = current_id + 1
 		}
-		if current_id <= num_users && len(current_member.Children)>=downlines_per_user-1 {
+		if current_id <= num_users && len(current_member.Children) >= downlines_per_user-1 {
 			child_member := &Member{
-				ID:       current_id,
-				Parent:   current_member,
-				Level:    current_member.Level + 1,
-				Sale:     joining_package_fee + additional_product_price,
+				ID:     current_id,
+				Parent: current_member,
+				Level:  current_member.Level + 1,
+				Sale:   joining_package_fee + additional_product_price,
 			}
 			current_member.Children = append(current_member.Children, child_member)
 			members = append(members, child_member)
@@ -211,7 +211,7 @@ func set_get_binary_bonus(binaryBonusPairingRatios map[string]int, binaryBonusRa
 		for i := range binaryBonusRange {
 			if bits >= binaryBonusRange[i]["min"] && bits <= binaryBonusRange[i]["max"] {
 				binary_percentage := binaryBonusRange[i]["bonus"]
-				binaryBonus = math.Min(float64(member.LeftSales), float64(member.RightSales))*binary_percentage/100
+				binaryBonus = math.Min(float64(member.LeftSales), float64(member.RightSales)) * binary_percentage / 100
 				break
 			}
 		}
@@ -260,6 +260,7 @@ func apply_matching_bonus(member *Member, parent *Member, matching_perc_list []f
 func main() {
 	//for binary plan
 	http.HandleFunc("/binary-calc/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("#####################start#######################")
 		var data map[string]interface{}
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -332,7 +333,6 @@ func main() {
 		current_id = 1
 		queue = []*Member{}
 		var totalExpense, totalRevenue, totalBinaryBonus, totalMatchingBonus, totalSponsorBonus float64
-		var cycles_data [][]MemberExport
 		var cycleList []ExportCycleData
 		var cycle_start_ids []int = []int{0}
 		cycle_num := 0
@@ -357,70 +357,77 @@ func main() {
 			sponsor_bonus = set_get_sponsor_bonus(sponsor_perc, capping_amount, cappingScopeMap, starting_id)
 			binary_bonus = set_get_binary_bonus(binaryBonusPairingRatios, binaryBonusRange, capping_amount, cappingScopeMap)
 			matching_bonus = set_get_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
-			var copiedMembers []MemberExport
+			// var copiedMembers []MemberExport
 			var revenue float64
 			for _, member := range members {
 				revenue = revenue + member.Sale
-				leftmember := -1
-				rightmember := -1
-				parent := -1
-				if member.LeftMember != nil {leftmember = member.LeftMember.ID}
-				if member.RightMember != nil {rightmember = member.RightMember.ID}
-				if member.Parent != nil {parent = member.Parent.ID}
-				copiedMember := MemberExport{
-					ID:                member.ID,
-					LeftMember:        leftmember,
-					RightMember:       rightmember,
-					Position:          member.Position,
-					Parent:            parent,
-					Left:              member.Left,
-					Right:             member.Right,
-					Level:             member.Level,
-					Sale:              member.Sale,
-					SponsorBonus:      member.SponsorBonus,
-					BinaryBonus:       member.BinaryBonus,
-					LeftSales:         member.LeftSales,
-					RightSales:        member.RightSales,
-					LeftCarryForward:  member.LeftCarryForward,
-					RightCarryForward: member.RightCarryForward,
-					MatchingBonus:     member.MatchingBonus,
-				}
-				copiedMembers = append(copiedMembers, copiedMember)
+			// 	leftmember := -1
+			// 	rightmember := -1
+			// 	parent := -1
+			// 	if member.LeftMember != nil {
+			// 		leftmember = member.LeftMember.ID
+			// 	}
+			// 	if member.RightMember != nil {
+			// 		rightmember = member.RightMember.ID
+			// 	}
+			// 	if member.Parent != nil {
+			// 		parent = member.Parent.ID
+			// 	}
+			// 	copiedMember := MemberExport{
+			// 		ID:                member.ID,
+			// 		LeftMember:        leftmember,
+			// 		RightMember:       rightmember,
+			// 		Position:          member.Position,
+			// 		Parent:            parent,
+			// 		Left:              member.Left,
+			// 		Right:             member.Right,
+			// 		Level:             member.Level,
+			// 		Sale:              member.Sale,
+			// 		SponsorBonus:      member.SponsorBonus,
+			// 		BinaryBonus:       member.BinaryBonus,
+			// 		LeftSales:         member.LeftSales,
+			// 		RightSales:        member.RightSales,
+			// 		LeftCarryForward:  member.LeftCarryForward,
+			// 		RightCarryForward: member.RightCarryForward,
+			// 		MatchingBonus:     member.MatchingBonus,
+			// 	}
+			// 	copiedMembers = append(copiedMembers, copiedMember)
 			}
-			expense := expense_per_member*float64(len(copiedMembers))
+			// expense := expense_per_member*float64(len(copiedMembers))
+			expense := expense_per_member*float64(len(members))
 			totalExpense = totalExpense + expense
 			totalRevenue = totalRevenue + revenue
 			totalBinaryBonus = totalBinaryBonus + binary_bonus
 			totalSponsorBonus = totalSponsorBonus + sponsor_bonus
 			totalMatchingBonus = totalMatchingBonus + matching_bonus
 			exportCycleData := ExportCycleData{
-				NumberUsers: len(copiedMembers),
-				Expense: expense,
-				Revenue: revenue,
-				Profit: revenue - expense,
-				Cycle: cycle_num,
-				BinaryBonus: binary_bonus,
-				SponsorBonus: sponsor_bonus,
+				// NumberUsers:   len(copiedMembers),
+				NumberUsers:   len(members),
+				Expense:       expense,
+				Revenue:       revenue,
+				Profit:        revenue - expense,
+				Cycle:         cycle_num,
+				BinaryBonus:   binary_bonus,
+				SponsorBonus:  sponsor_bonus,
 				MatchingBonus: matching_bonus,
-				MemberData:  copiedMembers,
+				// MemberData:    copiedMembers,
 			}
 			cycleList = append(cycleList, exportCycleData)
-			cycles_data = append(cycles_data, copiedMembers)
-
 			for _, member := range members {
 				member.MatchingBonus = 0
 			}
 		}
 		exportData := ExportData{
-			TotalExpense: totalExpense,
-			TotalRevenue: totalRevenue,
-			TotalProfit: totalRevenue - totalExpense,
-			TotalCycles: cycle_num,
-			TotalBinaryBonus: totalBinaryBonus,
-			TotalSponsorBonus: totalSponsorBonus,
+			TotalExpense:       totalExpense,
+			TotalRevenue:       totalRevenue,
+			TotalProfit:        totalRevenue - totalExpense,
+			TotalCycles:        cycle_num,
+			TotalBinaryBonus:   totalBinaryBonus,
+			TotalSponsorBonus:  totalSponsorBonus,
 			TotalMatchingBonus: totalMatchingBonus,
-			CycleData: cycleList,
+			CycleData:          cycleList,
 		}
+		fmt.Println(exportData)
 		response, err := json.Marshal(exportData)
 		if err != nil {
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
@@ -429,6 +436,7 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(response)
+		fmt.Println("#####################end#######################")
 	})
 
 	//for unilevel plan
@@ -481,7 +489,7 @@ func main() {
 			}
 			productCatalogueMap[k] = detail_map
 		}
-		fmt.Println(total_num_of_users, downlines_per_user,additional_product_price, product_order_list, productCatalogueMap, sponsor_perc, level_percs_list, capping_amount, cappingScopeMap)
+		fmt.Println(total_num_of_users, downlines_per_user, additional_product_price, product_order_list, productCatalogueMap, sponsor_perc, level_percs_list, capping_amount, cappingScopeMap)
 		members = []*Member{}
 		current_id = 1
 		queue = []*Member{}
@@ -506,10 +514,10 @@ func main() {
 			}
 			for _, member := range members {
 				fmt.Println("###############user starts################")
-				fmt.Println("User ID",member.ID)
+				fmt.Println("User ID", member.ID)
 				if member.Parent != nil {
 					fmt.Println("Parent ID", member.Parent.ID)
-				}else{
+				} else {
 					fmt.Println("Parent ID", nil)
 				}
 				for _, v := range member.Children {
