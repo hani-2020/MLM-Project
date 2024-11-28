@@ -49,14 +49,14 @@ type Member struct {
 // }
 
 type ExportCycleData struct {
-	NumberUsers   int            `json:"number_users"`
-	Expense       float64        `json:"expense"`
-	Revenue       float64        `json:"revenue"`
-	Profit        float64        `json:"profit"`
-	Cycle         int            `json:"cycle"`
-	BinaryBonus   float64        `json:"binary_bonus"`
-	MatchingBonus float64        `json:"matching_bonus"`
-	SponsorBonus  float64        `json:"sponsor_bonus"`
+	NumberUsers   int     `json:"number_users"`
+	Expense       float64 `json:"expense"`
+	Revenue       float64 `json:"revenue"`
+	Profit        float64 `json:"profit"`
+	Cycle         int     `json:"cycle"`
+	BinaryBonus   float64 `json:"binary_bonus"`
+	MatchingBonus float64 `json:"matching_bonus"`
+	SponsorBonus  float64 `json:"sponsor_bonus"`
 	// MemberData    []MemberExport `json:"member_data"`
 }
 
@@ -358,43 +358,44 @@ func main() {
 			binary_bonus = set_get_binary_bonus(binaryBonusPairingRatios, binaryBonusRange, capping_amount, cappingScopeMap)
 			matching_bonus = set_get_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
 			// var copiedMembers []MemberExport
-			var revenue float64
+			var revenue /*binaryBonus, matchingBonus,, sponsorBonus*/ float64
 			for _, member := range members {
 				revenue = revenue + member.Sale
-			// 	leftmember := -1
-			// 	rightmember := -1
-			// 	parent := -1
-			// 	if member.LeftMember != nil {
-			// 		leftmember = member.LeftMember.ID
-			// 	}
-			// 	if member.RightMember != nil {
-			// 		rightmember = member.RightMember.ID
-			// 	}
-			// 	if member.Parent != nil {
-			// 		parent = member.Parent.ID
-			// 	}
-			// 	copiedMember := MemberExport{
-			// 		ID:                member.ID,
-			// 		LeftMember:        leftmember,
-			// 		RightMember:       rightmember,
-			// 		Position:          member.Position,
-			// 		Parent:            parent,
-			// 		Left:              member.Left,
-			// 		Right:             member.Right,
-			// 		Level:             member.Level,
-			// 		Sale:              member.Sale,
-			// 		SponsorBonus:      member.SponsorBonus,
-			// 		BinaryBonus:       member.BinaryBonus,
-			// 		LeftSales:         member.LeftSales,
-			// 		RightSales:        member.RightSales,
-			// 		LeftCarryForward:  member.LeftCarryForward,
-			// 		RightCarryForward: member.RightCarryForward,
-			// 		MatchingBonus:     member.MatchingBonus,
-			// 	}
-			// 	copiedMembers = append(copiedMembers, copiedMember)
+				// sponsorBonus = sponsorBonus + member.SponsorBonus
+				// 	leftmember := -1
+				// 	rightmember := -1
+				// 	parent := -1
+				// 	if member.LeftMember != nil {
+				// 		leftmember = member.LeftMember.ID
+				// 	}
+				// 	if member.RightMember != nil {
+				// 		rightmember = member.RightMember.ID
+				// 	}
+				// 	if member.Parent != nil {
+				// 		parent = member.Parent.ID
+				// 	}
+				// 	copiedMember := MemberExport{
+				// 		ID:                member.ID,
+				// 		LeftMember:        leftmember,
+				// 		RightMember:       rightmember,
+				// 		Position:          member.Position,
+				// 		Parent:            parent,
+				// 		Left:              member.Left,
+				// 		Right:             member.Right,
+				// 		Level:             member.Level,
+				// 		Sale:              member.Sale,
+				// 		SponsorBonus:      member.SponsorBonus,
+				// 		BinaryBonus:       member.BinaryBonus,
+				// 		LeftSales:         member.LeftSales,
+				// 		RightSales:        member.RightSales,
+				// 		LeftCarryForward:  member.LeftCarryForward,
+				// 		RightCarryForward: member.RightCarryForward,
+				// 		MatchingBonus:     member.MatchingBonus,
+				// 	}
+				// 	copiedMembers = append(copiedMembers, copiedMember)
 			}
 			// expense := expense_per_member*float64(len(copiedMembers))
-			expense := expense_per_member*float64(len(members))
+			expense := expense_per_member * float64(len(members))
 			totalExpense = totalExpense + expense
 			totalRevenue = totalRevenue + revenue
 			totalBinaryBonus = totalBinaryBonus + binary_bonus
@@ -427,7 +428,12 @@ func main() {
 			TotalMatchingBonus: totalMatchingBonus,
 			CycleData:          cycleList,
 		}
-		fmt.Println(exportData)
+		for _, cycledata := range exportData.CycleData {
+			fmt.Println("cycle:", cycledata.Cycle)
+			fmt.Println("binary:", cycledata.BinaryBonus)
+			fmt.Println("sponsor:", cycledata.SponsorBonus)
+			fmt.Println("matching:", cycledata.MatchingBonus)
+		}
 		response, err := json.Marshal(exportData)
 		if err != nil {
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
