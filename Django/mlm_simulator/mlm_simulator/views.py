@@ -46,7 +46,7 @@ class BinaryCalculator(View):
         }
         capping_scope = request.POST.getlist('capping_scope')
         if capping_scope != ['']:
-            inputData['capping_scope'] = capping_scope
+            inputData['capping_scope'] = list(map(int, capping_scope[0].split(',')))
         form = BinaryForm(inputData)
         if form.is_valid():
             number_of_users = form.cleaned_data['number_of_users']

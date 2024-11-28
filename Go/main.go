@@ -388,7 +388,7 @@ func main() {
 				// 	copiedMembers = append(copiedMembers, copiedMember)
 			}
 			// expense := expense_per_member*float64(len(copiedMembers))
-			expense := expense_per_member * float64(len(members)) + binary_bonus + sponsorBonus + matching_bonus
+			expense := expense_per_member * float64(len(members))
 			totalExpense = totalExpense + expense
 			totalRevenue = totalRevenue + revenue
 			totalBinaryBonus = totalBinaryBonus + binary_bonus
@@ -399,7 +399,7 @@ func main() {
 				NumberUsers:   len(members),
 				Expense:       expense,
 				Revenue:       revenue,
-				Profit:        revenue - expense,
+				// Profit:        revenue - expense,
 				Cycle:         cycle_num,
 				BinaryBonus:   binary_bonus,
 				SponsorBonus:  sponsorBonus,
@@ -415,13 +415,14 @@ func main() {
 		exportData := ExportData{
 			TotalExpense:       totalExpense,
 			TotalRevenue:       totalRevenue,
-			TotalProfit:        totalRevenue - totalExpense,
+			// TotalProfit:        totalRevenue - totalExpense,
 			TotalCycles:        cycle_num,
 			TotalBinaryBonus:   totalBinaryBonus,
 			TotalSponsorBonus:  totalSponsorBonus,
 			TotalMatchingBonus: totalMatchingBonus,
 			CycleData:          cycleList,
 		}
+		fmt.Println(exportData)
 		response, err := json.Marshal(exportData)
 		if err != nil {
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
