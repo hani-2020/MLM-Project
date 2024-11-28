@@ -159,10 +159,9 @@ func build_binary_tree(num_users int, joining_package_fee float64, additional_pr
 	}
 }
 
-func set_get_sponsor_bonus(sponsor_perc float64, capping_amount float64, capping_scope map[string]bool, starting_id int) float64 {
-	var total_bonus float64 = 0
+func set_get_sponsor_bonus(sponsor_perc float64, capping_amount float64, capping_scope map[string]bool) {
 	for _, member := range members {
-		if member.ID >= starting_id && member.Parent != nil {
+		if member.Parent != nil {
 			sponsor_bonus := member.Parent.SponsorBonus + (member.Sale * sponsor_perc / 100)
 			if capping_scope["3"] && sponsor_bonus > capping_amount {
 				member.Parent.SponsorBonus = capping_amount
@@ -171,10 +170,6 @@ func set_get_sponsor_bonus(sponsor_perc float64, capping_amount float64, capping
 			}
 		}
 	}
-	for _, member := range members {
-		total_bonus = total_bonus + member.SponsorBonus
-	}
-	return total_bonus
 }
 
 func traverse(member *Member) float64 {
@@ -334,10 +329,9 @@ func main() {
 		queue = []*Member{}
 		var totalExpense, totalRevenue, totalBinaryBonus, totalMatchingBonus, totalSponsorBonus float64
 		var cycleList []ExportCycleData
-		var cycle_start_ids []int = []int{0}
 		cycle_num := 0
 		for total_num_of_users > 0 {
-			var sponsor_bonus, binary_bonus, matching_bonus float64
+			var binary_bonus, matching_bonus float64
 			cycle_num = cycle_num + 1
 			for product := range product_order_list {
 				number_of_users := int(productCatalogueMap[product_order_list[product]]["quantity"])
@@ -352,15 +346,14 @@ func main() {
 					break
 				}
 			}
-			cycle_start_ids = append(cycle_start_ids, len(members))
-			starting_id := cycle_start_ids[cycle_num-1]
-			sponsor_bonus = set_get_sponsor_bonus(sponsor_perc, capping_amount, cappingScopeMap, starting_id)
+			set_get_sponsor_bonus(sponsor_perc, capping_amount, cappingScopeMap)
 			binary_bonus = set_get_binary_bonus(binaryBonusPairingRatios, binaryBonusRange, capping_amount, cappingScopeMap)
 			matching_bonus = set_get_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
 			// var copiedMembers []MemberExport
-			var revenue /*binaryBonus, matchingBonus,, sponsorBonus*/ float64
+			var revenue /*binaryBonus, matchingBonus*/, sponsorBonus float64
 			for _, member := range members {
 				revenue = revenue + member.Sale
+				sponsorBonus = sponsorBonus + member.SponsorBonus
 				// sponsorBonus = sponsorBonus + member.SponsorBonus
 				// 	leftmember := -1
 				// 	rightmember := -1
@@ -395,11 +388,11 @@ func main() {
 				// 	copiedMembers = append(copiedMembers, copiedMember)
 			}
 			// expense := expense_per_member*float64(len(copiedMembers))
-			expense := expense_per_member * float64(len(members))
+			expense := expense_per_member * float64(len(members)) + binary_bonus + sponsorBonus + matching_bonus
 			totalExpense = totalExpense + expense
 			totalRevenue = totalRevenue + revenue
 			totalBinaryBonus = totalBinaryBonus + binary_bonus
-			totalSponsorBonus = totalSponsorBonus + sponsor_bonus
+			totalSponsorBonus = totalSponsorBonus + sponsorBonus
 			totalMatchingBonus = totalMatchingBonus + matching_bonus
 			exportCycleData := ExportCycleData{
 				// NumberUsers:   len(copiedMembers),
@@ -409,13 +402,14 @@ func main() {
 				Profit:        revenue - expense,
 				Cycle:         cycle_num,
 				BinaryBonus:   binary_bonus,
-				SponsorBonus:  sponsor_bonus,
+				SponsorBonus:  sponsorBonus,
 				MatchingBonus: matching_bonus,
 				// MemberData:    copiedMembers,
 			}
 			cycleList = append(cycleList, exportCycleData)
 			for _, member := range members {
 				member.MatchingBonus = 0
+				member.SponsorBonus = 0
 			}
 		}
 		exportData := ExportData{
@@ -427,12 +421,6 @@ func main() {
 			TotalSponsorBonus:  totalSponsorBonus,
 			TotalMatchingBonus: totalMatchingBonus,
 			CycleData:          cycleList,
-		}
-		for _, cycledata := range exportData.CycleData {
-			fmt.Println("cycle:", cycledata.Cycle)
-			fmt.Println("binary:", cycledata.BinaryBonus)
-			fmt.Println("sponsor:", cycledata.SponsorBonus)
-			fmt.Println("matching:", cycledata.MatchingBonus)
 		}
 		response, err := json.Marshal(exportData)
 		if err != nil {

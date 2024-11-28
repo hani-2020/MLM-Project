@@ -24,8 +24,8 @@
         };
 
         
-        const labels = ['Total Expense', 'Total Revenue', 'Total Profit', 'Total Binary Bonus', 'Total Sponsor Bonus', 'Total Matching Bonus'];
-        const values = [data.total_expense, data.total_revenue, data.total_profit, data.total_binary_bonus, data.total_sponsor_bonus, data.total_matching_bonus];
+        const labels = ['Total Expense', 'Total Profit'];
+        const values = [data.total_expense, data.total_profit];
 
         
         const ctx = document.getElementById('myPieChart').getContext('2d');
@@ -41,6 +41,7 @@
             },
             options: {
                 responsive: true,
+                aspectRatio: 1,
                 plugins: {
                     legend: {
                         position: 'top',
