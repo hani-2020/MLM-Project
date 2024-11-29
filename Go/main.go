@@ -252,10 +252,13 @@ func apply_matching_bonus(member *Member, parent *Member, matching_perc_list []f
 	apply_matching_bonus(member, parent, matching_perc_list, iterant, capping_amount, capping_scope)
 }
 
+func set_get_pool_bonus(pool_perc float64, dist_no int) float64{
+
+}
+
 func main() {
 	//for binary plan
 	http.HandleFunc("/binary-calc/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("#####################start#######################")
 		var data map[string]interface{}
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -331,7 +334,7 @@ func main() {
 		var cycleList []ExportCycleData
 		cycle_num := 0
 		for total_num_of_users > 0 {
-			var binary_bonus, matching_bonus float64
+			var binary_bonus, matching_bonus, pool_bonus float64
 			cycle_num = cycle_num + 1
 			for product := range product_order_list {
 				number_of_users := int(productCatalogueMap[product_order_list[product]]["quantity"])
@@ -387,6 +390,7 @@ func main() {
 				// 	}
 				// 	copiedMembers = append(copiedMembers, copiedMember)
 			}
+			pool_bonus = set_get_pool_bonus(pool_perc, dist_no)
 			// expense := expense_per_member*float64(len(copiedMembers))
 			expense := expense_per_member * float64(len(members))
 			totalExpense = totalExpense + expense
@@ -431,7 +435,6 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(response)
-		fmt.Println("#####################end#######################")
 	})
 
 	//for unilevel plan
