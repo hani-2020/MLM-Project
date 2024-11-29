@@ -32,21 +32,24 @@
     </div>
     <script>
         const data = {
-            total_expense: {{ total_expense }}+{{ total_binary_bonus }}+{{ total_sponsor_bonus }}+{{ total_matching_bonus }},
+            total_expense: {{ total_expense }}+{{ total_binary_bonus }}+{{ total_sponsor_bonus }}+{{ total_matching_bonus }}+{{total_pool_bonus}},
             total_revenue: {{ total_revenue }},
-            total_profit: {{ total_revenue }}-({{ total_expense }}+{{ total_binary_bonus }}+{{ total_sponsor_bonus }}+{{ total_matching_bonus }}),
+            total_profit: {{ total_revenue }}-({{ total_expense }}+{{ total_binary_bonus }}+{{ total_sponsor_bonus }}+{{ total_matching_bonus }}+{{total_pool_bonus}}),
             total_binary_bonus: {{ total_binary_bonus }},
             total_sponsor_bonus: {{ total_sponsor_bonus }},
-            total_matching_bonus: {{ total_matching_bonus }}
+            total_matching_bonus: {{ total_matching_bonus }},
+            total_pool_bonus: {{total_pool_bonus}}
         };
         const binaryList = []
         const sponsorList = []
         const matchingList = []
+        const poolList = []
         const cycleList = []
         {% for cycle in cycle_data %}
             binaryList.push({{ cycle.binary_bonus|safe }});
             sponsorList.push({{ cycle.sponsor_bonus|safe }});
             matchingList.push({{ cycle.matching_bonus|safe }});
+            poolList.push({{cycle.pool_bonus|safe}})
             cycleList.push({{ cycle.cycle|safe }});
         {% endfor %}
         const labels1 = ['Total Expense', 'Total Profit'];
@@ -80,8 +83,8 @@
             }
         });
 
-        const labels2 = ['Product Expenses', 'Sponsor Bonus', 'Binary Bonus', 'Matching Bonus'];
-        const values2 = [data.total_expense-(data.total_binary_bonus+data.total_matching_bonus+data.total_sponsor_bonus), data.total_sponsor_bonus, data.total_binary_bonus, data.total_matching_bonus];
+        const labels2 = ['Product Expenses', 'Sponsor Bonus', 'Binary Bonus', 'Matching Bonus', 'Pool Bonus'];
+        const values2 = [data.total_expense-(data.total_binary_bonus+data.total_matching_bonus+data.total_sponsor_bonus), data.total_sponsor_bonus, data.total_binary_bonus, data.total_matching_bonus, data.total_pool_bonus];
         const ctx2 = document.getElementById('myPieChart2').getContext('2d');
         const myPieChart2 = new Chart(ctx2, {
             type: 'pie',
@@ -133,6 +136,12 @@
                         label: 'Matching Bonus',
                         data: matchingList,
                         borderColor: '#4BC0C0',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Pool Bonus',
+                        data: poolList,
+                        borderColor: '#4BC0C1',
                         tension: 0.4
                     }
                 ]
