@@ -63,9 +63,10 @@ type ExportCycleData struct {
 }
 
 type ExportData struct {
+	PlanType           string            `json:"plan_type"`
 	TotalExpense       float64           `json:"total_expense"`
 	TotalRevenue       float64           `json:"total_revenue"`
-	TotalProfit        float64           `json:"total_profit"`
+	//TotalProfit        float64           `json:"total_profit"`
 	TotalCycles        int               `json:"total_cycles"`
 	TotalBinaryBonus   float64           `json:"total_binary_bonus"`
 	TotalSponsorBonus  float64           `json:"total_sponsor_bonus"`
@@ -245,7 +246,7 @@ func apply_matching_bonus(member *Member, parent *Member, matching_perc_list []f
 	}
 	matching_bonus := parent.MatchingBonus
 	matching_bonus = matching_bonus + (member.BinaryBonus * matching_perc_list[iterant] / 100)
-	if capping_scope["2"] && parent.MatchingBonus > capping_amount {
+	if capping_scope["2"] && matching_bonus > capping_amount {
 		parent.MatchingBonus = capping_amount
 	} else {
 		parent.MatchingBonus = matching_bonus
@@ -270,6 +271,70 @@ func set_get_pool_bonus(pool_perc float64, dist_no int, expense float64, revenue
 		}
 	}
 	return pool_amount
+}
+
+func set_get_level_bonus(level_percs_list []float64, capping_amount float64, capping_scope map[string]bool) float64 {
+	var total_bonus float64
+	for _, member := range members {
+		iterant := 0
+		if member.Parent == nil {
+			continue
+		}
+		parent := member.Parent
+		apply_level_bonus(member, parent, level_percs_list, iterant, capping_amount, capping_scope)
+	}
+	for _, member := range members {
+		total_bonus = total_bonus + member.SponsorBonus
+	}
+	return total_bonus
+}
+
+func apply_level_bonus(member *Member, parent *Member, level_percs_list []float64, iterant int, capping_amount float64, capping_scope map[string]bool) {
+	if iterant >= len(level_percs_list) || parent == nil {
+		return
+	}
+	sponsor_bonus := parent.SponsorBonus
+	sponsor_bonus = sponsor_bonus + (member.Sale * level_percs_list[iterant] / 100)
+	if capping_scope["4"] && sponsor_bonus > capping_amount {
+		parent.SponsorBonus = capping_amount
+	} else {
+		parent.SponsorBonus = sponsor_bonus
+	}
+	iterant = iterant + 1
+	parent = parent.Parent
+	apply_level_bonus(member, parent, level_percs_list, iterant, capping_amount, capping_scope)
+}
+
+func set_get_uni_matching_bonus(matching_percs_list []float64, capping_amount float64, capping_scope map[string]bool) float64 {
+	var total_bonus float64
+	for _, member := range members {
+		iterant := 0
+		if member.Parent == nil {
+			continue
+		}
+		parent := member.Parent
+		apply_uni_matching_bonus(member, parent, matching_percs_list, iterant, capping_amount, capping_scope)
+	}
+	for _, member := range members {
+		total_bonus = total_bonus + member.MatchingBonus
+	}
+	return total_bonus
+}
+
+func apply_uni_matching_bonus(member *Member, parent *Member, matching_perc_list []float64, iterant int, capping_amount float64, capping_scope map[string]bool) {
+	if iterant >= len(matching_perc_list) || parent == nil {
+		return
+	}
+	matching_bonus := parent.MatchingBonus
+	matching_bonus = matching_bonus + (member.SponsorBonus * matching_perc_list[iterant] / 100)
+	if capping_scope["2"] && matching_bonus > capping_amount {
+		parent.MatchingBonus = capping_amount
+	} else {
+		parent.MatchingBonus = matching_bonus
+	}
+	iterant = iterant + 1
+	parent = parent.Parent
+	apply_uni_matching_bonus(member, parent, matching_perc_list, iterant, capping_amount, capping_scope)
 }
 
 func main() {
@@ -437,6 +502,7 @@ func main() {
 			}
 		}
 		exportData := ExportData{
+			PlanType: "binary",
 			TotalExpense:       totalExpense,
 			TotalRevenue:       totalRevenue,
 			// TotalProfit:        totalRevenue - totalExpense,
@@ -447,7 +513,6 @@ func main() {
 			TotalPoolBonus: totalPoolBonus,
 			CycleData:          cycleList,
 		}
-		fmt.Println(exportData)
 		response, err := json.Marshal(exportData)
 		if err != nil {
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
@@ -472,18 +537,16 @@ func main() {
 		}
 
 		total_num_of_users := int(data["number_of_users"].(float64))
+		expense_per_member := data["expenses_per_member"].(float64)
 		downlines_per_user := int(data["downlines_per_user"].(float64))
 		additional_product_price := data["additional_product_price"].(float64)
 
 		product_orders := data["product_order_list"].([]interface{})
 		products_catalogue := data["products_catalogue"].(map[string]interface{})
 
-		sponsor_perc := data["sponsor_bonus"].(float64)
 		level_percs := data["level_bonus"].([]interface{})
-		var level_percs_list []float64
-		for _, v := range level_percs {
-			level_percs_list = append(level_percs_list, v.(float64))
-		}
+
+		matching_percs := data["matching_bonus_list"].([]interface{})
 
 		capping_amount := data["capping_amount"].(float64)
 		rawCappingScope := data["capping_scope"].([]interface{})
@@ -508,15 +571,24 @@ func main() {
 			}
 			productCatalogueMap[k] = detail_map
 		}
-		fmt.Println(total_num_of_users, downlines_per_user, additional_product_price, product_order_list, productCatalogueMap, sponsor_perc, level_percs_list, capping_amount, cappingScopeMap)
+
+		var matching_perc_list []float64
+		for _, v := range matching_percs {
+			matching_perc_list = append(matching_perc_list, v.(float64))
+		}
+
+		var level_percs_list []float64
+		for _, v := range level_percs {
+			level_percs_list = append(level_percs_list, v.(float64))
+		}
 		members = []*Member{}
 		current_id = 1
 		queue = []*Member{}
-		//var cycles_data [][]*MemberExport
-		//var cycle_start_ids []int = []int{0}
+		var totalExpense, totalRevenue, totalMatchingBonus, totalSponsorBonus float64
+		var cycleList []ExportCycleData
 		cycle_num := 0
 		for total_num_of_users > 0 {
-			fmt.Println("###############cycle starts################")
+			var level_bonus, matching_bonus float64
 			cycle_num = cycle_num + 1
 			for product := range product_order_list {
 				number_of_users := int(productCatalogueMap[product_order_list[product]]["quantity"])
@@ -531,30 +603,47 @@ func main() {
 					break
 				}
 			}
+			level_bonus = set_get_level_bonus(level_percs_list, capping_amount, cappingScopeMap)
+			matching_bonus = set_get_uni_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
+			var revenue float64
 			for _, member := range members {
-				fmt.Println("###############user starts################")
-				fmt.Println("User ID", member.ID)
-				if member.Parent != nil {
-					fmt.Println("Parent ID", member.Parent.ID)
-				} else {
-					fmt.Println("Parent ID", nil)
-				}
-				for _, v := range member.Children {
-					fmt.Println("Downline ID", v.ID)
-				}
+				revenue = revenue + member.Sale
+				member.MatchingBonus = 0
+				member.SponsorBonus = 0
 			}
+			expense := expense_per_member * float64(len(members))
+			totalExpense = totalExpense + expense
+			totalRevenue = totalRevenue + revenue
+			totalSponsorBonus = totalSponsorBonus + level_bonus
+			totalMatchingBonus = totalMatchingBonus + matching_bonus
+			exportCycleData := ExportCycleData{
+				NumberUsers:   len(members),
+				Expense:       expense,
+				Revenue:       revenue,
+				Cycle:         cycle_num,
+				SponsorBonus:  level_bonus,
+				MatchingBonus: matching_bonus,
+			}
+			cycleList = append(cycleList, exportCycleData)
 		}
-		// for _, member := range members {
-		// 	fmt.Println("User ID",member.ID)
-		// 	if member.Parent != nil {
-		// 		fmt.Println("Parent ID", member.Parent.ID)
-		// 	}else{
-		// 		fmt.Println("Parent ID", nil)
-		// 	}
-		// 	for _, v := range member.Children {
-		// 		fmt.Println("Downline ID", v.ID)
-		// 	}
-		// }
+		exportData := ExportData{
+			PlanType: "unilevel",
+			TotalExpense:       totalExpense,
+			TotalRevenue:       totalRevenue,
+			TotalCycles:        cycle_num,
+			TotalSponsorBonus:  totalSponsorBonus,
+			TotalMatchingBonus: totalMatchingBonus,
+			CycleData:          cycleList,
+		}
+		fmt.Println(exportData)
+		response, err := json.Marshal(exportData)
+		if err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(response)
 	})
 	http.ListenAndServe(":8080", nil)
 }

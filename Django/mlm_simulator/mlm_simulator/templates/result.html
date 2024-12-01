@@ -31,6 +31,7 @@
         </div>
     </div>
     <script>
+        {% if plan_type == "binary" %}
         const data = {
             total_expense: {{ total_expense }}+{{ total_binary_bonus }}+{{ total_sponsor_bonus }}+{{ total_matching_bonus }}+{{total_pool_bonus}},
             total_revenue: {{ total_revenue }},
@@ -45,11 +46,17 @@
         const matchingList = []
         const poolList = []
         const cycleList = []
+        const profitList = []
+        const expenseList = []
         {% for cycle in cycle_data %}
-            binaryList.push({{ cycle.binary_bonus|safe }});
-            sponsorList.push({{ cycle.sponsor_bonus|safe }});
-            matchingList.push({{ cycle.matching_bonus|safe }});
-            poolList.push({{cycle.pool_bonus|safe}})
+            binaryList.push({{ cycle.binary_bonus}});
+            sponsorList.push({{ cycle.sponsor_bonus }});
+            matchingList.push({{ cycle.matching_bonus }});
+            poolList.push({{cycle.pool_bonus}})
+            var expense = {{cycle.expense}}+{{cycle.binary_bonus}}+{{cycle.sponsor_bonus}}+{{cycle.matching_bonus}}+{{cycle.pool_bonus}}
+            var profit = {{cycle.revenue}} -  expense
+            profitList.push(profit)
+            expenseList.push(expense)
             cycleList.push({{ cycle.cycle|safe }});
         {% endfor %}
         const labels1 = ['Total Expense', 'Total Profit'];
@@ -84,7 +91,7 @@
         });
 
         const labels2 = ['Product Expenses', 'Sponsor Bonus', 'Binary Bonus', 'Matching Bonus', 'Pool Bonus'];
-        const values2 = [data.total_expense-(data.total_binary_bonus+data.total_matching_bonus+data.total_sponsor_bonus), data.total_sponsor_bonus, data.total_binary_bonus, data.total_matching_bonus, data.total_pool_bonus];
+        const values2 = [data.total_expense-(data.total_binary_bonus+data.total_matching_bonus+data.total_sponsor_bonus+data.total_pool_bonus), data.total_sponsor_bonus, data.total_binary_bonus, data.total_matching_bonus, data.total_pool_bonus];
         const ctx2 = document.getElementById('myPieChart2').getContext('2d');
         const myPieChart2 = new Chart(ctx2, {
             type: 'pie',
@@ -92,7 +99,7 @@
                 labels: labels2,
                 datasets: [{
                     data: values2,
-                    backgroundColor: ['#FF6384', '#36A2EB', '#4BC0C0', '#FF9F40'],
+                    backgroundColor: ['#FF6384', '#36A2EB', '#4BC0C0', '#FF9F40', '#9966FF'],
                     hoverOffset: 4
                 }]
             },
@@ -141,7 +148,19 @@
                     {
                         label: 'Pool Bonus',
                         data: poolList,
-                        borderColor: '#4BC0C1',
+                        borderColor: '#FF9F40',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Profit',
+                        data: profitList,
+                        borderColor: '#9966FF',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Expense',
+                        data: expenseList,
+                        borderColor: '#FFCD56',
                         tension: 0.4
                     }
                 ]
@@ -174,6 +193,151 @@
                 }
             }
         });
+        {% elif plan_type == "unilevel" %}
+        const data = {
+            total_expense: {{ total_expense }}+{{ total_sponsor_bonus }}+{{ total_matching_bonus }},
+            total_revenue: {{ total_revenue }},
+            total_profit: {{ total_revenue }}-({{ total_expense }}+{{ total_sponsor_bonus }}+{{ total_matching_bonus }}),
+            total_sponsor_bonus: {{ total_sponsor_bonus }},
+            total_matching_bonus: {{ total_matching_bonus }},
+        };
+        const sponsorList = []
+        const matchingList = []
+        const cycleList = []
+        const profitList = []
+        const expenseList = []
+        {% for cycle in cycle_data %}
+            sponsorList.push({{ cycle.sponsor_bonus }});
+            matchingList.push({{ cycle.matching_bonus }});
+            var expense = {{cycle.expense}}+{{cycle.sponsor_bonus}}+{{cycle.matching_bonus}}
+            var profit = {{cycle.revenue}} -  expense
+            profitList.push(profit)
+            expenseList.push(expense)
+            cycleList.push({{ cycle.cycle }});
+        {% endfor %}
+        const labels1 = ['Total Expense', 'Total Profit'];
+        const values1 = [data.total_expense, data.total_profit];
+        const ctx1 = document.getElementById('myPieChart1').getContext('2d');
+        const myPieChart1 = new Chart(ctx1, {
+            type: 'pie',
+            data: {
+                labels: labels1,
+                datasets: [{
+                    data: values1,
+                    backgroundColor: ['#FF6384', '#36A2EB'],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                aspectRatio: 1,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return tooltipItem.label + ':' + tooltipItem.raw.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const labels2 = ['Product Expenses', 'Sponsor Bonus', 'Matching Bonus'];
+        const values2 = [data.total_expense-(data.total_matching_bonus+data.total_sponsor_bonus), data.total_sponsor_bonus, data.total_matching_bonus];
+        const ctx2 = document.getElementById('myPieChart2').getContext('2d');
+        const myPieChart2 = new Chart(ctx2, {
+            type: 'pie',
+            data: {
+                labels: labels2,
+                datasets: [{
+                    data: values2,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#4BC0C0'],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                aspectRatio: 1,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return tooltipItem.label + ':' + tooltipItem.raw.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const ctx3 = document.getElementById('lineChart').getContext('2d');
+        const lineChart = new Chart(ctx3, {
+            type: 'line',
+            data: {
+                labels: cycleList,
+                datasets: [
+                    {
+                        label: 'Sponsor Bonus',
+                        data: sponsorList,
+                        borderColor: '#36A2EB',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Matching Bonus',
+                        data: matchingList,
+                        borderColor: '#4BC0C0',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Profit',
+                        data: profitList,
+                        borderColor: '#9966FF',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Expense',
+                        data: expenseList,
+                        borderColor: '#FFCD56',
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Cycle'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Amount'
+                        },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        {% endif %}
     </script>
 </body>
 </html>

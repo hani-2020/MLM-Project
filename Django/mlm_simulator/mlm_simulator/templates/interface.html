@@ -57,6 +57,13 @@
             border-color: #5a67d8;
             transition: background-color 0.2s;
         }
+        .btn-primary-active {
+            background-color: #434190;
+            border-color: #434190;
+            box-shadow: 0 4px 10px rgba(90, 103, 216, 0.5);
+            transform: scale(0.98);
+            transition: background-color 0.2s, transform 0.1s;
+        }
         .btn-primary:hover {
             background-color: #4c51bf;
             border-color: #4c51bf;
@@ -74,17 +81,15 @@
     <h2>MLM Plan Calculator</h2>
     <form id="mlmCalculator">
         <!-- Base Currency -->
-        <div class="row g-3">
-            <div class="col-md-6">
-                <label for="numUsers" class="form-label">Number of Users</label>
-                <input type="number" class="form-control" id="numUsers" placeholder="Enter number of users">
-            </div>
-            <div class="col-md-6">
-                <label for="numUsers" class="form-label">Expense per user</label>
-                <input type="number" class="form-control" id="expenseUser" placeholder="Expense per user">
+        <div class="form-label">Choose Plan</div>
+        <div class="col-md-6 d-flex align-items-end mb-3">
+            <div class="btn-group w-100" role="group">
+                <button type="button" class="btn btn-primary" id="binaryBtn">BINARY MLM</button>
+                <button type="button" class="btn btn-primary" id="unilevelBtn">UNILEVEL MLM</button>
+                <button type="button" class="btn btn-primary" id="matrixBtn">MATRIX MLM</button>
             </div>
         </div>
-        <div class="row g-3">
+        <div class="row g-3 mb-3">
             <div class="col-md-6">
                 <label for="baseCurrency" class="form-label">Base Currency</label>
                 <select id="baseCurrency" class="form-select">
@@ -95,15 +100,17 @@
                     <option value="HKD">HKD</option>
                 </select>
             </div>
-            <div class="col-md-6 d-flex align-items-end">
-                <div class="btn-group w-100" role="group">
-                    <button type="button" class="btn btn-primary" id="binaryBtn">BINARY MLM</button>
-                    <button type="button" class="btn btn-primary" id="unilevelBtn">UNILEVEL MLM</button>
-                    <button type="button" class="btn btn-primary" id="matrixBtn">MATRIX MLM</button>
-                </div>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="numUsers" class="form-label">Number of Users</label>
+                <input type="number" class="form-control" id="numUsers" placeholder="Enter number of users">
+            </div>
+            <div class="col-md-6">
+                <label for="numUsers" class="form-label">Expense per user</label>
+                <input type="number" class="form-control" id="expenseUser" placeholder="Expense per user">
             </div>
         </div>
-
         <!-- Product Data Fields -->
         <div id="productContainer">
             <div class="plan-card mt-4 p-4 product-entry">
@@ -117,10 +124,10 @@
                         <input type="text" class="form-control productPrice" id="productPrice" placeholder="Price">
                         <label for="productPrice" class="form-label small text-muted">Price</label>
                     </div>
-                    <div class="col-md-3">
+                    <!-- <div class="col-md-3">
                         <input type="number" class="form-control" id="productBV" placeholder="BV">
                         <label for="productBV" class="form-label small text-muted">Business Volume</label>
-                    </div>
+                    </div> -->
                     <div class="col-md-3">
                         <input type="text" class="form-control productQuantity" id="productQuantity" placeholder="Quantity">
                         <label for="productQuantity" class="form-label small text-muted">Quantity</label>
@@ -133,34 +140,62 @@
         <!-- Binary Form Fields -->
         <div id="binaryForm" class="plan-card hidden mt-4">
             <h5>BINARY MLM Plan</h5>
-            <div class="row g-3">
+            <div class="form-label">Choose Plan</div>
+            <div class="col-md-6 d-flex align-items-end mb-3">
+                <div class="btn-group w-100" role="group">
+                    <button type="button" class="btn btn-primary" id="weak-leg-btn">Weak leg Binary</button>
+                    <button type="button" class="btn btn-primary" id="pairing-btn">Pair Binary</button>
+                </div>
+            </div>
+            <div class="row g-3 mb-3 hidden" id="pairing-form">
                 <div class="col-md-4">
                     <label for="binaryPercentage" class="form-label">Binary Bonus Ranges</label>
-                    <input type="text" class="form-control" id="binaryRange" placeholder="Binary %">
+                    <input type="text" class="form-control" id="binaryRange" placeholder="1-3, 4-8, 9">
                 </div>
                 <div class="col-md-4">
                     <label for="binaryPercentage" class="form-label">Binary %</label>
-                    <input type="text" class="form-control" id="binaryPercentage" placeholder="Binary %">
+                    <input type="text" class="form-control" id="binaryPercentage" placeholder="1, 5, 10">
                 </div>
                 <div class="col-md-4">
                     <label for="binaryRatio" class="form-label">Ratio</label>
                     <input type="text" class="form-control" id="binaryRatio" placeholder="e.g., 1:1">
                 </div>
-                <div class="col-md-4">
+                <!-- <div class="col-md-4">
                     <label for="binaryOption" class="form-label">Bonus Option</label>
                     <select id="binaryOption" class="form-select">
                         <option value="price">Price</option>
                         <option value="bv">BV</option>
                     </select>
+                </div> -->
+            </div>
+            <div class="row g-3 mb-3 hidden" id="weak-leg-form">
+                <div class="col-md-4 hidden">
+                    <label for="binaryPercentage" class="form-label">Binary Bonus Ranges</label>
+                    <input type="text" class="form-control" id="binaryRange" placeholder="1-3, 4-8, 9" value="1">
                 </div>
-                <div class="col-md-6">
-                    <label for="sponsorBonus" class="form-label">Sponsor Bonus (%)</label>
-                    <input type="number" class="form-control" id="sponsorBonus" placeholder="Sponsor Bonus %">
+                <div class="col-md-4">
+                    <label for="binaryPercentage" class="form-label">Binary %</label>
+                    <input type="text" class="form-control" id="binaryPercentage" placeholder="10">
                 </div>
-                <div class="col-md-6">
-                    <label for="matchingBonus" class="form-label">Matching Bonus (%)</label>
-                    <input type="text" class="form-control" id="matchingBonus" placeholder="Matching Bonus %">
+                <div class="col-md-4 hidden">
+                    <label for="binaryRatio" class="form-label">Ratio</label>
+                    <input type="text" class="form-control" id="binaryRatio" placeholder="e.g., 1:1" value="1:1">
                 </div>
+                <!-- <div class="col-md-4">
+                    <label for="binaryOption" class="form-label">Bonus Option</label>
+                    <select id="binaryOption" class="form-select">
+                        <option value="price">Price</option>
+                        <option value="bv">BV</option>
+                    </select>
+                </div> -->
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="sponsorBonus" class="form-label">Sponsor Bonus (%)</label>
+                <input type="number" class="form-control" id="sponsorBonus" placeholder="10">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="matchingBonus" class="form-label">Matching Bonus (%)</label>
+                <input type="text" class="form-control" id="matchingBonus" placeholder="10, 5">
             </div>
         </div>
 
@@ -169,12 +204,16 @@
             <h5>UNILEVEL MLM Plan</h5>
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label for="unilevelPercentage" class="form-label">Unilevel %</label>
-                    <input type="number" class="form-control" id="unilevelPercentage" placeholder="Unilevel %">
+                    <label for="downlines" class="form-label">Downlines Per User</label>
+                    <input type="number" class="form-control" id="downlinesperUser" placeholder="3">
                 </div>
                 <div class="col-md-6">
-                    <label for="unilevelSponsorBonus" class="form-label">Sponsor Bonus (%)</label>
-                    <input type="number" class="form-control" id="unilevelSponsorBonus" placeholder="Sponsor Bonus %">
+                    <label for="unilevelPercentage" class="form-label">Level Bonus (%)</label>
+                    <input type="text" class="form-control" id="unilevelsponsorBonus" placeholder="10, 5, 1">
+                </div>
+                <div class="col-md-6">
+                    <label for="unilevelSponsorBonus" class="form-label">Matching Bonus (%)</label>
+                    <input type="text" class="form-control" id="unilevelmatchingBonus" placeholder="10, 5, 1">
                 </div>
             </div>
         </div>
@@ -201,20 +240,34 @@
                     <label for="cappingLimit" class="form-label">Capping Limit (Amount)</label>
                     <input type="number" class="form-control" id="cappingLimit" placeholder="Enter amount">
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-6" id="cappingContainer">
                     <label class="form-label">Capping Scope</label>
-                    <div class="d-flex">
-                        <div class="form-check me-3">
-                            <input class="form-check-input" type="checkbox" id="binaryBonus" value="1">
-                            <label class="form-check-label" for="binaryBonus">Binary Bonus</label>
+                    <div id="binaryCappingContainer" class="hidden">
+                        <div class="d-flex">
+                            <div class="form-check me-3">
+                                <input class="form-check-input" type="checkbox" id="binaryBonus" value="1">
+                                <label class="form-check-label" for="binaryBonus">Binary Bonus</label>
+                            </div>
+                            <div class="form-check me-3">
+                                <input class="form-check-input" type="checkbox" id="sponsorBonusScope" value="2">
+                                <label class="form-check-label" for="sponsorBonusScope">Sponsor Bonus</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="matchingBonusScope" value="3">
+                                <label class="form-check-label" for="matchingBonusScope">Matching Bonus</label>
+                            </div>
                         </div>
-                        <div class="form-check me-3">
-                            <input class="form-check-input" type="checkbox" id="sponsorBonusScope" value="2">
-                            <label class="form-check-label" for="sponsorBonusScope">Sponsor Bonus</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="matchingBonusScope" value="3">
-                            <label class="form-check-label" for="matchingBonusScope">Matching Bonus</label>
+                    </div>
+                    <div id="unilevelCappingContainer" class="hidden">
+                        <div class="d-flex">
+                            <div class="form-check me-3">
+                                <input class="form-check-input" type="checkbox" id="levelBonusScope" value="4">
+                                <label class="form-check-label" for="sponsorBonusScope">Level Bonus</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="unilevelmatchingBonusScope" value="3">
+                                <label class="form-check-label" for="matchingBonusScope">Matching Bonus</label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -240,18 +293,72 @@
         // Append the new entry to the container
         productContainer.appendChild(newProductEntry);
     }
+    cappingContainer = document.getElementById("cappingContainer")
+    binaryCappingContainer = document.getElementById("binaryCappingContainer")
+    unilevelCappingContainer = document.getElementById("unilevelCappingContainer")
     document.getElementById('binaryBtn').addEventListener('click', function() {
         event.preventDefault(); 
         toggleForms('binaryForm');
+        document.getElementById("unilevelBtn").classList.remove("btn-primary-active")
+        document.getElementById("matrixBtn").classList.remove("btn-primary-active")
+        document.getElementById("binaryBtn").classList.add("btn-primary-active")
+        if (cappingContainer.contains(unilevelCappingContainer)){
+            cappingContainer.removeChild(unilevelCappingContainer)
+        }
+        cappingContainer.appendChild(binaryCappingContainer)
+        unilevelCappingContainer.classList.add("hidden")
+        binaryCappingContainer.classList.remove("hidden")
     });
     document.getElementById('unilevelBtn').addEventListener('click', function() {
         event.preventDefault(); 
         toggleForms('unilevelForm');
+        document.getElementById("unilevelBtn").classList.add("btn-primary-active")
+        document.getElementById("matrixBtn").classList.remove("btn-primary-active")
+        document.getElementById("binaryBtn").classList.remove("btn-primary-active")
+        if (cappingContainer.contains(binaryCappingContainer)){
+            cappingContainer.removeChild(binaryCappingContainer)
+        }
+        cappingContainer.appendChild(unilevelCappingContainer)
+        unilevelCappingContainer.classList.remove("hidden")
+        binaryCappingContainer.classList.add("hidden")
     });
     document.getElementById('matrixBtn').addEventListener('click', function() {
         event.preventDefault(); 
         toggleForms('matrixForm');
+        document.getElementById("unilevelBtn").classList.remove("btn-primary-active")
+        document.getElementById("matrixBtn").classList.add("btn-primary-active")
+        document.getElementById("binaryBtn").classList.remove("btn-primary-active")
     });
+
+    const binaryForm = document.getElementById("binaryForm")
+    const weakLegForm = document.getElementById("weak-leg-form")
+    const pairingForm = document.getElementById("pairing-form")
+    document.getElementById('weak-leg-btn').addEventListener('click', function(){
+        if (binaryForm.contains(pairingForm)){
+            binaryForm.removeChild(pairingForm)
+        }
+        if (binaryForm.contains(weakLegForm)){
+            binaryForm.removeChild(weakLegForm)
+        }
+        binaryForm.appendChild(weakLegForm)
+        document.getElementById('pairing-btn').classList.remove("btn-primary-active")
+        document.getElementById('weak-leg-btn').classList.add("btn-primary-active")
+        weakLegForm.classList.remove("hidden")
+        pairingForm.classList.add("hidden")
+    })
+    document.getElementById('pairing-btn').addEventListener('click', function(){
+        if (binaryForm.contains(weakLegForm)){
+            binaryForm.removeChild(weakLegForm)
+        }
+        if (binaryForm.contains(pairingForm)){
+            binaryForm.removeChild(pairingForm)
+        }
+        binaryForm.appendChild(pairingForm)
+        document.getElementById('pairing-btn').classList.add("btn-primary-active")
+        document.getElementById('weak-leg-btn').classList.remove("btn-primary-active")
+        weakLegForm.classList.add("hidden")
+        pairingForm.classList.remove("hidden")
+    })
 
     function toggleForms(formId) {
         // Hide all forms
@@ -270,20 +377,21 @@
         const baseCurrency = document.getElementById('baseCurrency').value;
         const productName = Array.from(document.querySelectorAll('.productName')).map(input => input.value);
         const productPrice = Array.from(document.querySelectorAll('.productPrice')).map(input => input.value);
-        const productBV = document.getElementById('productBV').value;
+        //const productBV = document.getElementById('productBV').value;
         const productQuantity = Array.from(document.querySelectorAll('.productQuantity')).map(input => input.value);
 
         // Binary form values
         const binaryRange = document.getElementById('binaryRange') ? document.getElementById('binaryRange').value : null;
         const binaryPercentage = document.getElementById('binaryPercentage') ? document.getElementById('binaryPercentage').value : null;
         const binaryRatio = document.getElementById('binaryRatio') ? document.getElementById('binaryRatio').value : null;
-        const binaryOption = document.getElementById('binaryOption') ? document.getElementById('binaryOption').value : null;
+        //const binaryOption = document.getElementById('binaryOption') ? document.getElementById('binaryOption').value : null;
         const sponsorBonus = document.getElementById('sponsorBonus') ? document.getElementById('sponsorBonus').value : null;
         const matchingBonus = document.getElementById('matchingBonus') ? document.getElementById('matchingBonus').value : null;
 
         // Unilevel form values
-        const unilevelPercentage = document.getElementById('unilevelPercentage') ? document.getElementById('unilevelPercentage').value : null;
-        const unilevelSponsorBonus = document.getElementById('unilevelSponsorBonus') ? document.getElementById('unilevelSponsorBonus').value : null;
+        const downlinesperUser = document.getElementById("downlinesperUser") ? document.getElementById("downlinesperUser").value : null
+        const levelPercentage = document.getElementById('unilevelsponsorBonus') ? document.getElementById('unilevelsponsorBonus').value : null;
+        const unilevelmatchingbonus = document.getElementById('unilevelmatchingBonus') ? document.getElementById('unilevelmatchingBonus').value : null;
 
         // Matrix form values
         const matrixPercentage = document.getElementById('matrixPercentage') ? document.getElementById('matrixPercentage').value : null;
@@ -291,9 +399,11 @@
 
         // Capping limit values
         const cappingLimit = document.getElementById('cappingLimit').value;
-        const binaryBonusChecked = document.getElementById('binaryBonus').checked;
-        const sponsorBonusChecked = document.getElementById('sponsorBonusScope').checked;
-        const matchingBonusChecked = document.getElementById('matchingBonusScope').checked;
+        const binaryBonusChecked = document.getElementById('binaryBonus') ? document.getElementById('binaryBonus').checked : null ;
+        const sponsorBonusChecked = document.getElementById('sponsorBonusScope') ? document.getElementById('sponsorBonusScope').checked : null;
+        const matchingBonusChecked = document.getElementById('matchingBonusScope') ? document.getElementById('matchingBonusScope').checked : null;
+        const levelBonusChecked = document.getElementById("levelBonusScope") ? document.getElementById("levelBonusScope").checked : null;
+        const unilevelMatchingChecked = document.getElementById("unilevelmatchingBonusScope") ? document.getElementById("unilevelmatchingBonusScope").checked : null;
         const cappingScope = []
         if (sponsorBonusChecked){
             cappingScope.push(3)
@@ -301,25 +411,37 @@
         if (binaryBonusChecked){
             cappingScope.push(1)
         }
-        if (matchingBonusChecked){
+        if (matchingBonusChecked || unilevelMatchingChecked){
             cappingScope.push(2)
         }
+        if (levelBonusChecked){
+            cappingScope.push(4)
+        }
 
+        const formData = new URLSearchParams();
+        formData.append('number_of_users', numUsers);
+        formData.append('business_expenses_per_member', expenseUser);
+        formData.append('additional_product_price', '0');
+        formData.append('product_names', productName);
+        formData.append('product_prices', productPrice);
+        formData.append('product_quantities', productQuantity);
+        formData.append('capping_amount', cappingLimit);
+        formData.append('capping_scope', cappingScope);
         if (!document.getElementById('binaryForm').classList.contains('hidden')) {
-            const formData = new URLSearchParams();
-            formData.append('number_of_users', numUsers);
-            formData.append('business_expenses_per_member', expenseUser);
-            formData.append('additional_product_price', '0');
-            formData.append('product_names', productName);
-            formData.append('product_prices', productPrice);
-            formData.append('product_quantities', productQuantity);
             formData.append('sponsor_bonus', sponsorBonus);
+            formData.append('matching_bonus_per_level', matchingBonus);
+            // const formData = new URLSearchParams();
+            // formData.append('number_of_users', numUsers);
+            // formData.append('business_expenses_per_member', expenseUser);
+            // formData.append('additional_product_price', '0');
+            // formData.append('product_names', productName);
+            // formData.append('product_prices', productPrice);
+            // formData.append('product_quantities', productQuantity);
             formData.append('binary_bonus_range', binaryRange);
             formData.append('binary_bonus', binaryPercentage);
             formData.append('binary_bonus_pairing_ratio', binaryRatio);
-            formData.append('matching_bonus_per_level', matchingBonus);
-            formData.append('capping_amount', cappingLimit);
-            formData.append('capping_scope', cappingScope);
+            // formData.append('capping_amount', cappingLimit);
+            // formData.append('capping_scope', cappingScope);
             fetch('http://localhost:8000/binary/', {
                 method: 'POST',
                 headers: {
@@ -328,16 +450,30 @@
                 body: formData.toString()
                 })
                 .then(response => {
-                    
                     window.location.href = response.url;
                 })
                 .catch(error => {
                     console.error('Error:', error);
                 });
             }
-        // else if(!document.getElementById('unilevelForm').classList.contains('hidden')){
-
-        // }
+        else if(!document.getElementById('unilevelForm').classList.contains('hidden')){
+            formData.append("downlines_per_user", downlinesperUser)
+            formData.append("level_bonus_per_level", levelPercentage)
+            formData.append("matching_bonus_per_level", unilevelmatchingbonus)
+            fetch('http://localhost:8000/unilevel/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: formData.toString()
+                })
+                .then(response => {
+                    window.location.href = response.url;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
         // else if(!document.getElementById('matrixForm').classList.contains('hidden')){
 
         // }
