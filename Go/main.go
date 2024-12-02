@@ -438,6 +438,8 @@ func main() {
 			for _, member := range members {
 				revenue = revenue + member.Sale
 				sponsorBonus = sponsorBonus + member.SponsorBonus
+				member.MatchingBonus = 0
+				member.SponsorBonus = 0
 				// sponsorBonus = sponsorBonus + member.SponsorBonus
 				// 	leftmember := -1
 				// 	rightmember := -1
@@ -496,10 +498,10 @@ func main() {
 				// MemberData:    copiedMembers,
 			}
 			cycleList = append(cycleList, exportCycleData)
-			for _, member := range members {
-				member.MatchingBonus = 0
-				member.SponsorBonus = 0
-			}
+			// for _, member := range members {
+			// 	member.MatchingBonus = 0
+			// 	member.SponsorBonus = 0
+			// }
 		}
 		exportData := ExportData{
 			PlanType: "binary",

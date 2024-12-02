@@ -281,16 +281,12 @@
 </div>
 
 <script>
+    const productContainer = document.getElementById('productContainer');
     function addProduct() {
         event.preventDefault(); 
-        // Get the product entry to clone
-        const productContainer = document.getElementById('productContainer');
+        //const productContainer = document.getElementById('productContainer');
         const newProductEntry = productContainer.firstElementChild.cloneNode(true);
-    
-        // Optionally, reset the values of the inputs in the new entry
         newProductEntry.querySelectorAll('input').forEach(input => input.value = '');
-    
-        // Append the new entry to the container
         productContainer.appendChild(newProductEntry);
     }
     cappingContainer = document.getElementById("cappingContainer")
