@@ -63,9 +63,9 @@ type ExportCycleData struct {
 }
 
 type ExportData struct {
-	PlanType           string            `json:"plan_type"`
-	TotalExpense       float64           `json:"total_expense"`
-	TotalRevenue       float64           `json:"total_revenue"`
+	PlanType     string  `json:"plan_type"`
+	TotalExpense float64 `json:"total_expense"`
+	TotalRevenue float64 `json:"total_revenue"`
 	//TotalProfit        float64           `json:"total_profit"`
 	TotalCycles        int               `json:"total_cycles"`
 	TotalBinaryBonus   float64           `json:"total_binary_bonus"`
@@ -256,17 +256,17 @@ func apply_matching_bonus(member *Member, parent *Member, matching_perc_list []f
 	apply_matching_bonus(member, parent, matching_perc_list, iterant, capping_amount, capping_scope)
 }
 
-func set_get_pool_bonus(pool_perc float64, dist_no int, expense float64, revenue float64, sponsorBonus float64, binary_bonus float64, matching_bonus float64) float64{
+func set_get_pool_bonus(pool_perc float64, dist_no int, expense float64, revenue float64, sponsorBonus float64, binary_bonus float64, matching_bonus float64) float64 {
 	var pool_amount float64
 	no_people := math.Min(float64(dist_no), float64(len(members)))
 	profit := revenue - (expense + sponsorBonus + binary_bonus + matching_bonus)
-	if profit < 0{
+	if profit < 0 {
 		pool_amount = 0
-	}else{
+	} else {
 		pool_amount = profit * pool_perc / 100
-		for _, member := range members{
-			if member.ID < int(no_people){
-				member.PoolBonus = pool_amount/no_people
+		for _, member := range members {
+			if member.ID < int(no_people) {
+				member.PoolBonus = pool_amount / no_people
 			}
 		}
 	}
@@ -486,33 +486,32 @@ func main() {
 			totalPoolBonus = totalPoolBonus + pool_bonus
 			exportCycleData := ExportCycleData{
 				// NumberUsers:   len(copiedMembers),
-				NumberUsers:   len(members),
-				Expense:       expense,
-				Revenue:       revenue,
+				NumberUsers: len(members),
+				Expense:     expense,
+				Revenue:     revenue,
 				// Profit:        revenue - expense,
 				Cycle:         cycle_num,
 				BinaryBonus:   binary_bonus,
 				SponsorBonus:  sponsorBonus,
 				MatchingBonus: matching_bonus,
-				PoolBonus: pool_bonus,
+				PoolBonus:     pool_bonus,
 				// MemberData:    copiedMembers,
 			}
 			cycleList = append(cycleList, exportCycleData)
 			// for _, member := range members {
-			// 	member.MatchingBonus = 0
-			// 	member.SponsorBonus = 0
+			// 	fmt.Println(member.ID, member.SponsorBonus, member.BinaryBonus, member.MatchingBonus)
 			// }
 		}
 		exportData := ExportData{
-			PlanType: "binary",
-			TotalExpense:       totalExpense,
-			TotalRevenue:       totalRevenue,
+			PlanType:     "binary",
+			TotalExpense: totalExpense,
+			TotalRevenue: totalRevenue,
 			// TotalProfit:        totalRevenue - totalExpense,
 			TotalCycles:        cycle_num,
 			TotalBinaryBonus:   totalBinaryBonus,
 			TotalSponsorBonus:  totalSponsorBonus,
 			TotalMatchingBonus: totalMatchingBonus,
-			TotalPoolBonus: totalPoolBonus,
+			TotalPoolBonus:     totalPoolBonus,
 			CycleData:          cycleList,
 		}
 		response, err := json.Marshal(exportData)
@@ -629,7 +628,7 @@ func main() {
 			cycleList = append(cycleList, exportCycleData)
 		}
 		exportData := ExportData{
-			PlanType: "unilevel",
+			PlanType:           "unilevel",
 			TotalExpense:       totalExpense,
 			TotalRevenue:       totalRevenue,
 			TotalCycles:        cycle_num,

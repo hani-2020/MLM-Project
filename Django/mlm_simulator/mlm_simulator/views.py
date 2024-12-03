@@ -109,7 +109,6 @@ class BinaryCalculator(View):
             'capping_amount': capping_amount,
             'capping_scope': capping_scope
         }
-        print(input)
         send_to_go(input, "binary-calc")
         return redirect("result")
         
@@ -120,6 +119,7 @@ class UnilevelCalculator(View):
         return super().dispatch(*args, **kwargs)
     
     def post(self, request, *args, **kwargs):
+        print(request.POST)
         inputData = {
             'number_of_users': int(request.POST.get('number_of_users')),
             'business_expenses_per_member': float(request.POST.get('business_expenses_per_member')),
