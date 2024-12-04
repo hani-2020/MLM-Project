@@ -10,10 +10,11 @@ from urllib.parse import quote
 
 empty_json = {}
 
-def send_to_go(input, link):
+def send_to_go(input, link, url):
         global empty_json
+        domain = url.split(':')
         try:
-            response = requests.post("http://localhost:8080/"+link+"/", json=input)
+            response = requests.post(domain[0] + ":" + domain[1] + ":8080/" + link + "/", json=input)
             response_data = response.json()
             empty_json = response_data
             return response_data
@@ -30,6 +31,7 @@ class BinaryCalculator(View):
         return super().dispatch(*args, **kwargs)
 
     def post(self, request, *args, **kwargs):
+        print(request.POST)
         inputData = {
             'number_of_users': int(request.POST.get('number_of_users')),
             'business_expenses_per_member': float(request.POST.get('business_expenses_per_member')),
@@ -109,7 +111,8 @@ class BinaryCalculator(View):
             'capping_amount': capping_amount,
             'capping_scope': capping_scope
         }
-        send_to_go(input, "binary-calc")
+        url = request.build_absolute_uri()
+        send_to_go(input, "binary-calc", url)
         return redirect("result")
         
 class UnilevelCalculator(View):
@@ -119,7 +122,6 @@ class UnilevelCalculator(View):
         return super().dispatch(*args, **kwargs)
     
     def post(self, request, *args, **kwargs):
-        print(request.POST)
         inputData = {
             'number_of_users': int(request.POST.get('number_of_users')),
             'business_expenses_per_member': float(request.POST.get('business_expenses_per_member')),
@@ -182,6 +184,8 @@ class UnilevelCalculator(View):
             'capping_amount': capping_amount,
             'capping_scope': capping_scope
         }
+        domain = request.get_host().split(':')[0]
+        url = f"{request.scheme}://{domain}"
         send_to_go(input, "unilevel-calc")
         return redirect("result")
     

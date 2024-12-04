@@ -163,7 +163,8 @@ func build_binary_tree(num_users int, joining_package_fee float64, additional_pr
 	}
 }
 
-func set_get_sponsor_bonus(sponsor_perc float64, capping_amount float64, capping_scope map[string]bool) {
+func set_get_sponsor_bonus(sponsor_perc float64, capping_amount float64, capping_scope map[string]bool) float64 {
+	var sponsorBonus float64
 	for _, member := range members {
 		if member.Parent != nil {
 			sponsor_bonus := member.Parent.SponsorBonus + (member.Sale * sponsor_perc / 100)
@@ -174,6 +175,10 @@ func set_get_sponsor_bonus(sponsor_perc float64, capping_amount float64, capping
 			}
 		}
 	}
+	for _, member := range members {
+		sponsorBonus = sponsorBonus + member.SponsorBonus
+	}
+	return sponsorBonus
 }
 
 func traverse(member *Member) float64 {
@@ -265,7 +270,7 @@ func set_get_pool_bonus(pool_perc float64, dist_no int, expense float64, revenue
 	} else {
 		pool_amount = profit * pool_perc / 100
 		for _, member := range members {
-			if member.ID < int(no_people) {
+			if member.ID < int(no_people+1) && member.ID > 1 {
 				member.PoolBonus = pool_amount / no_people
 			}
 		}
@@ -415,7 +420,7 @@ func main() {
 		var cycleList []ExportCycleData
 		cycle_num := 0
 		for total_num_of_users > 0 {
-			var binary_bonus, matching_bonus, pool_bonus float64
+			var binary_bonus, matching_bonus, pool_bonus, sponsorBonus, revenue float64
 			cycle_num = cycle_num + 1
 			for product := range product_order_list {
 				number_of_users := int(productCatalogueMap[product_order_list[product]]["quantity"])
@@ -430,50 +435,18 @@ func main() {
 					break
 				}
 			}
-			set_get_sponsor_bonus(sponsor_perc, capping_amount, cappingScopeMap)
+			sponsorBonus = set_get_sponsor_bonus(sponsor_perc, capping_amount, cappingScopeMap)
+			sponsorBonus = sponsorBonus - members[0].SponsorBonus
 			binary_bonus = set_get_binary_bonus(binaryBonusPairingRatios, binaryBonusRange, capping_amount, cappingScopeMap)
+			binary_bonus = binary_bonus - members[0].BinaryBonus
 			matching_bonus = set_get_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
-			// var copiedMembers []MemberExport
-			var revenue /*binaryBonus, matchingBonus*/, sponsorBonus float64
+			matching_bonus = matching_bonus - members[0].MatchingBonus
 			for _, member := range members {
 				revenue = revenue + member.Sale
-				sponsorBonus = sponsorBonus + member.SponsorBonus
+				// fmt.Println(member.ID, member.BinaryBonus, member.LeftCarryForward, member.RightCarryForward, member.LeftSales, member.RightSales)
 				member.MatchingBonus = 0
 				member.SponsorBonus = 0
-				// sponsorBonus = sponsorBonus + member.SponsorBonus
-				// 	leftmember := -1
-				// 	rightmember := -1
-				// 	parent := -1
-				// 	if member.LeftMember != nil {
-				// 		leftmember = member.LeftMember.ID
-				// 	}
-				// 	if member.RightMember != nil {
-				// 		rightmember = member.RightMember.ID
-				// 	}
-				// 	if member.Parent != nil {
-				// 		parent = member.Parent.ID
-				// 	}
-				// 	copiedMember := MemberExport{
-				// 		ID:                member.ID,
-				// 		LeftMember:        leftmember,
-				// 		RightMember:       rightmember,
-				// 		Position:          member.Position,
-				// 		Parent:            parent,
-				// 		Left:              member.Left,
-				// 		Right:             member.Right,
-				// 		Level:             member.Level,
-				// 		Sale:              member.Sale,
-				// 		SponsorBonus:      member.SponsorBonus,
-				// 		BinaryBonus:       member.BinaryBonus,
-				// 		LeftSales:         member.LeftSales,
-				// 		RightSales:        member.RightSales,
-				// 		LeftCarryForward:  member.LeftCarryForward,
-				// 		RightCarryForward: member.RightCarryForward,
-				// 		MatchingBonus:     member.MatchingBonus,
-				// 	}
-				// 	copiedMembers = append(copiedMembers, copiedMember)
 			}
-			// expense := expense_per_member*float64(len(copiedMembers))
 			expense := expense_per_member * float64(len(members))
 			pool_perc := 3.0
 			dist_no := 100
@@ -485,28 +458,21 @@ func main() {
 			totalMatchingBonus = totalMatchingBonus + matching_bonus
 			totalPoolBonus = totalPoolBonus + pool_bonus
 			exportCycleData := ExportCycleData{
-				// NumberUsers:   len(copiedMembers),
-				NumberUsers: len(members),
-				Expense:     expense,
-				Revenue:     revenue,
-				// Profit:        revenue - expense,
+				NumberUsers:   len(members),
+				Expense:       expense,
+				Revenue:       revenue,
 				Cycle:         cycle_num,
 				BinaryBonus:   binary_bonus,
 				SponsorBonus:  sponsorBonus,
 				MatchingBonus: matching_bonus,
 				PoolBonus:     pool_bonus,
-				// MemberData:    copiedMembers,
 			}
 			cycleList = append(cycleList, exportCycleData)
-			// for _, member := range members {
-			// 	fmt.Println(member.ID, member.SponsorBonus, member.BinaryBonus, member.MatchingBonus)
-			// }
 		}
 		exportData := ExportData{
-			PlanType:     "binary",
-			TotalExpense: totalExpense,
-			TotalRevenue: totalRevenue,
-			// TotalProfit:        totalRevenue - totalExpense,
+			PlanType:           "binary",
+			TotalExpense:       totalExpense,
+			TotalRevenue:       totalRevenue,
 			TotalCycles:        cycle_num,
 			TotalBinaryBonus:   totalBinaryBonus,
 			TotalSponsorBonus:  totalSponsorBonus,
@@ -514,6 +480,7 @@ func main() {
 			TotalPoolBonus:     totalPoolBonus,
 			CycleData:          cycleList,
 		}
+		fmt.Printf("%+v\n", exportData)
 		response, err := json.Marshal(exportData)
 		if err != nil {
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)

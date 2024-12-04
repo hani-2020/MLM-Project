@@ -465,17 +465,23 @@
         const productQuantity = Array.from(document.querySelectorAll('.productQuantity')).map(input => input.value);
 
         // Binary form values
-        const minInputs = document.querySelectorAll('#binaryRangeMin');
-        const maxInputs = document.querySelectorAll('#binaryRangeMax');
-        let ranges = [];
-        minInputs.forEach((minInput, index) => {
-            const min = minInput.value.trim();
-            const max = maxInputs[index]?.value.trim();
-            if (min) {
-                ranges.push(max ? `${min}-${max}` : `${min}`);
-            }
-        });
-        const binaryRange = ranges.join(', ');
+        let binaryRange;
+        if (document.getElementById("binaryRange")){
+            binaryRange = document.getElementById("binaryRange").value;
+        }
+        else {
+            const minInputs = document.querySelectorAll('#binaryRangeMin');
+            const maxInputs = document.querySelectorAll('#binaryRangeMax');
+            let ranges = [];
+            minInputs.forEach((minInput, index) => {
+                const min = minInput.value.trim();
+                const max = maxInputs[index]?.value.trim();
+                if (min) {
+                    ranges.push(max ? `${min}-${max}` : `${min}`);
+                }
+            });
+            binaryRange = ranges.join(', ');
+        }
         const binaryPercentage = document.querySelectorAll('#binaryPercentage') ? Array.from(document.querySelectorAll('#binaryPercentage')).map(input => input.value).join(', ') : null;
         const binaryRatio = document.getElementById('binaryRatio') ? document.getElementById('binaryRatio').value : null;
         const sponsorBonus = document.getElementById('sponsorBonus') ? document.getElementById('sponsorBonus').value : null;
@@ -523,20 +529,10 @@
         if (!document.getElementById('binaryForm').classList.contains('hidden')) {
             formData.append('sponsor_bonus', sponsorBonus);
             formData.append('matching_bonus_per_level', matchingBonusInputs);
-            // const formData = new URLSearchParams();
-            // formData.append('number_of_users', numUsers);
-            // formData.append('business_expenses_per_member', expenseUser);
-            // formData.append('additional_product_price', '0');
-            // formData.append('product_names', productName);
-            // formData.append('product_prices', productPrice);
-            // formData.append('product_quantities', productQuantity);
             formData.append('binary_bonus_range', binaryRange);
             formData.append('binary_bonus', binaryPercentage);
             formData.append('binary_bonus_pairing_ratio', binaryRatio);
-            // formData.append('capping_amount', cappingLimit);
-            // formData.append('capping_scope', cappingScope);
-            console.log("Data: ",formData)
-            fetch('http://localhost:8000/binary/', {
+            fetch('binary/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -554,7 +550,7 @@
             formData.append("downlines_per_user", downlinesperUser)
             formData.append("level_bonus_per_level", levelPercentage)
             formData.append("matching_bonus_per_level", unilevelmatchingbonus)
-            fetch('http://localhost:8000/unilevel/', {
+            fetch('unilevel/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
