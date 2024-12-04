@@ -77,7 +77,6 @@
 <body>
 
 <div class="container">
-    <h1>{{test}}</h1>
     <h2>MLM Plan Calculator</h2>
     <form id="mlmCalculator">
         <!-- Base Currency -->
@@ -137,6 +136,21 @@
             </div>
         </div>
         <button class="btn btn-primary mt-3" onclick="addProduct()">+ Add Product</button>
+
+        <div class="plan-card mt-4">
+            <h5>Pool Bonus</h5>
+            <div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Pool Bonus Percentage</label>
+                    <input type="number" class="form-control" id="pool-bonus-percentage" placeholder="3">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Pool Participants Count</label>
+                    <input type="number" class="form-control" id="pool-bonus-participants-count" placeholder="100">
+                </div>
+            </div>
+        </div>
+
         <!-- Binary Form Fields -->
         <div id="binaryForm" class="plan-card hidden mt-4">
             <h5>BINARY MLM Plan</h5>
@@ -463,6 +477,8 @@
         const productPrice = Array.from(document.querySelectorAll('.productPrice')).map(input => input.value);
         //const productBV = document.getElementById('productBV').value;
         const productQuantity = Array.from(document.querySelectorAll('.productQuantity')).map(input => input.value);
+        const poolBonus = document.getElementById("pool-bonus-percentage").value;
+        const poolBonusCount = document.getElementById("pool-bonus-participants-count").value;
 
         // Binary form values
         let binaryRange;
@@ -526,6 +542,8 @@
         formData.append('product_quantities', productQuantity);
         formData.append('capping_amount', cappingLimit);
         formData.append('capping_scope', cappingScope);
+        formData.append('pool_bonus', poolBonus);
+        formData.append("pool_distribution", poolBonusCount);
         if (!document.getElementById('binaryForm').classList.contains('hidden')) {
             formData.append('sponsor_bonus', sponsorBonus);
             formData.append('matching_bonus_per_level', matchingBonusInputs);

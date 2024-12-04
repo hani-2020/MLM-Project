@@ -29,26 +29,6 @@ type Member struct {
 	RightCarryForward float64
 }
 
-// type MemberExport struct {
-// 	ID                int     `json:"id"`
-// 	LeftMember        int     `json:"left_member"`
-// 	RightMember       int     `json:"right_member"`
-// 	Children          []int   `json:"children"`
-// 	Position          string  `json:"position"`
-// 	Parent            int     `json:"parent"`
-// 	Left              int     `json:"left"`
-// 	Right             int     `json:"right"`
-// 	Level             int     `json:"level"`
-// 	Sale              float64 `json:"sale"`
-// 	SponsorBonus      float64 `json:"sponsor_bonus"`
-// 	BinaryBonus       float64 `json:"binary_bonus"`
-// 	LeftSales         float64 `json:"left_sales"`
-// 	RightSales        float64 `json:"right_sales"`
-// 	LeftCarryForward  float64 `json:"left_carry_forward"`
-// 	RightCarryForward float64 `json:"right_carry_forward"`
-// 	MatchingBonus     float64 `json:"matching_bonus"`
-// }
-
 type ExportCycleData struct {
 	NumberUsers   int     `json:"number_users"`
 	Expense       float64 `json:"expense"`
@@ -59,14 +39,12 @@ type ExportCycleData struct {
 	MatchingBonus float64 `json:"matching_bonus"`
 	SponsorBonus  float64 `json:"sponsor_bonus"`
 	PoolBonus     float64 `json:"pool_bonus"`
-	// MemberData    []MemberExport `json:"member_data"`
 }
 
 type ExportData struct {
 	PlanType     string  `json:"plan_type"`
 	TotalExpense float64 `json:"total_expense"`
 	TotalRevenue float64 `json:"total_revenue"`
-	//TotalProfit        float64           `json:"total_profit"`
 	TotalCycles        int               `json:"total_cycles"`
 	TotalBinaryBonus   float64           `json:"total_binary_bonus"`
 	TotalSponsorBonus  float64           `json:"total_sponsor_bonus"`
@@ -204,8 +182,8 @@ func set_get_binary_bonus(binaryBonusPairingRatios map[string]int, binaryBonusRa
 			right_sales = traverse(member.RightMember)
 			member.RightSales = right_sales + member.RightCarryForward
 		}
-		left_bits := int(left_sales) / binaryBonusPairingRatios["left"]
-		right_bits := int(right_sales) / binaryBonusPairingRatios["right"]
+		left_bits := int(member.LeftSales) / binaryBonusPairingRatios["left"]
+		right_bits := int(member.RightSales) / binaryBonusPairingRatios["right"]
 		bits := math.Min(float64(left_bits), float64(right_bits))
 		left_amount := bits * float64(binaryBonusPairingRatios["left"])
 		right_amount := bits * float64(binaryBonusPairingRatios["right"])
@@ -374,6 +352,9 @@ func main() {
 		rawCappingScope := data["capping_scope"].([]interface{})
 		cappingScopeMap := make(map[string]bool)
 
+		pool_perc := data["pool_bonus"].(float64)
+		pool_distribution := data["pool_distribution"].(float64)
+
 		var product_order_list []string
 
 		for _, v := range rawCappingScope {
@@ -443,14 +424,13 @@ func main() {
 			matching_bonus = matching_bonus - members[0].MatchingBonus
 			for _, member := range members {
 				revenue = revenue + member.Sale
-				// fmt.Println(member.ID, member.BinaryBonus, member.LeftCarryForward, member.RightCarryForward, member.LeftSales, member.RightSales)
 				member.MatchingBonus = 0
 				member.SponsorBonus = 0
 			}
 			expense := expense_per_member * float64(len(members))
-			pool_perc := 3.0
-			dist_no := 100
-			pool_bonus = set_get_pool_bonus(pool_perc, dist_no, expense, revenue, sponsorBonus, binary_bonus, matching_bonus)
+			// pool_perc := 3.0
+			// dist_no := 100
+			pool_bonus = set_get_pool_bonus(pool_perc, int(pool_distribution), expense, revenue, sponsorBonus, binary_bonus, matching_bonus)
 			totalExpense = totalExpense + expense
 			totalRevenue = totalRevenue + revenue
 			totalBinaryBonus = totalBinaryBonus + binary_bonus
@@ -480,7 +460,6 @@ func main() {
 			TotalPoolBonus:     totalPoolBonus,
 			CycleData:          cycleList,
 		}
-		fmt.Printf("%+v\n", exportData)
 		response, err := json.Marshal(exportData)
 		if err != nil {
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
@@ -520,6 +499,9 @@ func main() {
 		rawCappingScope := data["capping_scope"].([]interface{})
 		cappingScopeMap := make(map[string]bool)
 
+		pool_perc := data["pool_bonus"].(float64)
+		pool_distribution := data["pool_distribution"].(float64)
+
 		var product_order_list []string
 
 		for _, v := range rawCappingScope {
@@ -552,7 +534,7 @@ func main() {
 		members = []*Member{}
 		current_id = 1
 		queue = []*Member{}
-		var totalExpense, totalRevenue, totalMatchingBonus, totalSponsorBonus float64
+		var totalExpense, totalRevenue, totalMatchingBonus, totalSponsorBonus, totalPoolBonus float64
 		var cycleList []ExportCycleData
 		cycle_num := 0
 		for total_num_of_users > 0 {
@@ -572,7 +554,9 @@ func main() {
 				}
 			}
 			level_bonus = set_get_level_bonus(level_percs_list, capping_amount, cappingScopeMap)
+			level_bonus = level_bonus - members[0].SponsorBonus
 			matching_bonus = set_get_uni_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
+			matching_bonus = matching_bonus - members[0].MatchingBonus
 			var revenue float64
 			for _, member := range members {
 				revenue = revenue + member.Sale
@@ -580,10 +564,12 @@ func main() {
 				member.SponsorBonus = 0
 			}
 			expense := expense_per_member * float64(len(members))
+			pool_bonus := set_get_pool_bonus(pool_perc, int(pool_distribution), expense, revenue, level_bonus, 0, matching_bonus)
 			totalExpense = totalExpense + expense
 			totalRevenue = totalRevenue + revenue
 			totalSponsorBonus = totalSponsorBonus + level_bonus
 			totalMatchingBonus = totalMatchingBonus + matching_bonus
+			totalPoolBonus = totalPoolBonus + pool_bonus
 			exportCycleData := ExportCycleData{
 				NumberUsers:   len(members),
 				Expense:       expense,
@@ -591,6 +577,7 @@ func main() {
 				Cycle:         cycle_num,
 				SponsorBonus:  level_bonus,
 				MatchingBonus: matching_bonus,
+				PoolBonus:     pool_bonus,
 			}
 			cycleList = append(cycleList, exportCycleData)
 		}
@@ -601,6 +588,7 @@ func main() {
 			TotalCycles:        cycle_num,
 			TotalSponsorBonus:  totalSponsorBonus,
 			TotalMatchingBonus: totalMatchingBonus,
+			TotalPoolBonus:     totalPoolBonus,
 			CycleData:          cycleList,
 		}
 		fmt.Println(exportData)

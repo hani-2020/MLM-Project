@@ -4,7 +4,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views import View
 from .forms import BinaryForm, UnilevelForm
 from django.http import JsonResponse
+import os
 import json
+from cryptography.fernet import Fernet
 import requests
 from urllib.parse import quote
 
@@ -31,10 +33,9 @@ class BinaryCalculator(View):
         return super().dispatch(*args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        print(request.POST)
         inputData = {
             'number_of_users': int(request.POST.get('number_of_users')),
-            'business_expenses_per_member': float(request.POST.get('business_expenses_per_member')),
+            'business_expenses_per_member': float(request.POST.get('business_expenses_per_member')) if request.POST.get('business_expenses_per_member')!="" else 0,
             'additional_product_price': float(request.POST.get('additional_product_price')),
             'product_prices': ','.join(request.POST.getlist('product_prices')).rstrip(','),
             'product_names': ','.join(request.POST.getlist('product_names')).rstrip(','),
@@ -45,6 +46,8 @@ class BinaryCalculator(View):
             'binary_bonus_pairing_ratio': ','.join(request.POST.getlist('binary_bonus_pairing_ratio')),
             'matching_bonus_per_level': ','.join(request.POST.getlist('matching_bonus_per_level')),
             'capping_amount': request.POST.get('capping_amount'), 
+            'pool_bonus': float(request.POST.get('pool_bonus')),
+            'pool_distribution': int(request.POST.get('pool_distribution'))
         }
         capping_scope = request.POST.getlist('capping_scope')
         if capping_scope != ['']:
@@ -69,6 +72,9 @@ class BinaryCalculator(View):
 
             capping_amount = form.cleaned_data['capping_amount']
             capping_scope = form.cleaned_data['capping_scope']
+
+            pool_bonus = form.cleaned_data['pool_bonus']
+            pool_distribution = form.cleaned_data['pool_distribution']
         product_names_list = product_names.split(",") if product_names else []
         product_prices_list = [float(price) for price in product_prices.split(",")] if product_prices else []
         product_quantities_list = [int(quantity) for quantity in product_quantities.split(",")] if product_quantities else []
@@ -109,7 +115,9 @@ class BinaryCalculator(View):
             'binary_bonus_range': binary_bonus_dict,
             'matching_bonus_list': matching_bonus_list,
             'capping_amount': capping_amount,
-            'capping_scope': capping_scope
+            'capping_scope': capping_scope,
+            'pool_bonus': pool_bonus,
+            'pool_distribution': pool_distribution
         }
         url = request.build_absolute_uri()
         send_to_go(input, "binary-calc", url)
@@ -124,7 +132,7 @@ class UnilevelCalculator(View):
     def post(self, request, *args, **kwargs):
         inputData = {
             'number_of_users': int(request.POST.get('number_of_users')),
-            'business_expenses_per_member': float(request.POST.get('business_expenses_per_member')),
+            'business_expenses_per_member': float(request.POST.get('business_expenses_per_member')) if request.POST.get('business_expenses_per_member')!="" else 0,
             'additional_product_price': float(request.POST.get('additional_product_price')),
             'product_prices': ','.join(request.POST.getlist('product_prices')).rstrip(','),
             'product_names': ','.join(request.POST.getlist('product_names')).rstrip(','),
@@ -133,6 +141,8 @@ class UnilevelCalculator(View):
             'matching_bonus_per_level': ','.join(request.POST.getlist('matching_bonus_per_level')),
             'capping_amount': request.POST.get('capping_amount'), 
             "downlines_per_user": int(request.POST.get('downlines_per_user')),
+            'pool_bonus': float(request.POST.get('pool_bonus')),
+            'pool_distribution': int(request.POST.get('pool_distribution'))
         }
         capping_scope = request.POST.getlist('capping_scope')
         if capping_scope != ['']:
@@ -154,6 +164,9 @@ class UnilevelCalculator(View):
 
             capping_amount = form.cleaned_data['capping_amount']
             capping_scope = form.cleaned_data['capping_scope']
+
+            pool_bonus = form.cleaned_data['pool_bonus']
+            pool_distribution = form.cleaned_data['pool_distribution']
         product_names_list = product_names.split(",") if product_names else []
         product_prices_list = [float(price) for price in product_prices.split(",")] if product_prices else []
         product_quantities_list = [int(quantity) for quantity in product_quantities.split(",")] if product_quantities else []
@@ -182,11 +195,12 @@ class UnilevelCalculator(View):
             'level_bonus': level_bonus_list,
             'matching_bonus_list': matching_bonus_list,
             'capping_amount': capping_amount,
-            'capping_scope': capping_scope
+            'capping_scope': capping_scope,
+            'pool_bonus': pool_bonus,
+            'pool_distribution': pool_distribution
         }
-        domain = request.get_host().split(':')[0]
-        url = f"{request.scheme}://{domain}"
-        send_to_go(input, "unilevel-calc")
+        url = request.build_absolute_uri()
+        send_to_go(input, "unilevel-calc", url)
         return redirect("result")
     
 class Result(View):
