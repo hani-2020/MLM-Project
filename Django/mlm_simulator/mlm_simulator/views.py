@@ -137,7 +137,7 @@ class UnilevelCalculator(View):
             'product_prices': ','.join(request.POST.getlist('product_prices')).rstrip(','),
             'product_names': ','.join(request.POST.getlist('product_names')).rstrip(','),
             'product_quantities': ','.join(request.POST.getlist('product_quantities')).rstrip(','),
-            'level_bonus_per_level': ','.join(request.POST.getlist('matching_bonus_per_level')),
+            'level_bonus_per_level': ','.join(request.POST.getlist('level_bonus_per_level')),
             'matching_bonus_per_level': ','.join(request.POST.getlist('matching_bonus_per_level')),
             'capping_amount': request.POST.get('capping_amount'), 
             "downlines_per_user": int(request.POST.get('downlines_per_user')),
@@ -176,10 +176,9 @@ class UnilevelCalculator(View):
                 'price': product_prices_list[i],
                 'quantity': product_quantities_list[i]
             }
-
-        level_bonus_list = [float(value) for value in level_bonus_string.split(",")]
+        level_bonus_list = [float(value) for value in level_bonus_string.split(",") if value != ""]
         if matching_bonus_string:
-            matching_bonus_list = [float(value) for value in matching_bonus_string.split(",")]
+            matching_bonus_list = [float(value) for value in matching_bonus_string.split(",") if value != ""]
         else:
             matching_bonus_list = [0]
         if not capping_scope or not capping_amount:

@@ -42,9 +42,9 @@ type ExportCycleData struct {
 }
 
 type ExportData struct {
-	PlanType     string  `json:"plan_type"`
-	TotalExpense float64 `json:"total_expense"`
-	TotalRevenue float64 `json:"total_revenue"`
+	PlanType           string            `json:"plan_type"`
+	TotalExpense       float64           `json:"total_expense"`
+	TotalRevenue       float64           `json:"total_revenue"`
 	TotalCycles        int               `json:"total_cycles"`
 	TotalBinaryBonus   float64           `json:"total_binary_bonus"`
 	TotalSponsorBonus  float64           `json:"total_sponsor_bonus"`
@@ -193,7 +193,7 @@ func set_get_binary_bonus(binaryBonusPairingRatios map[string]int, binaryBonusRa
 		for i := range binaryBonusRange {
 			if bits >= binaryBonusRange[i]["min"] && bits <= binaryBonusRange[i]["max"] {
 				binary_percentage := binaryBonusRange[i]["bonus"]
-				binaryBonus = math.Min(float64(member.LeftSales), float64(member.RightSales)) * binary_percentage / 100
+				binaryBonus = math.Min(float64(left_amount), float64(right_amount)) * binary_percentage / 100
 				break
 			}
 		}
@@ -428,8 +428,6 @@ func main() {
 				member.SponsorBonus = 0
 			}
 			expense := expense_per_member * float64(len(members))
-			// pool_perc := 3.0
-			// dist_no := 100
 			pool_bonus = set_get_pool_bonus(pool_perc, int(pool_distribution), expense, revenue, sponsorBonus, binary_bonus, matching_bonus)
 			totalExpense = totalExpense + expense
 			totalRevenue = totalRevenue + revenue

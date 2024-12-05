@@ -260,7 +260,7 @@
 
         <!-- Matrix Form Fields -->
         <div id="matrixForm" class="plan-card hidden mt-4">
-            <h5>MATRIX MLM Plan</h5>
+            <!-- <h5>MATRIX MLM Plan</h5>
             <div class="row g-3">
                 <div class="col-md-6">
                     <label for="matrixPercentage" class="form-label">Matrix %</label>
@@ -270,6 +270,29 @@
                     <label for="matrixSponsorBonus" class="form-label">Sponsor Bonus (%)</label>
                     <input type="number" class="form-control" id="matrixSponsorBonus" placeholder="Sponsor Bonus %">
                 </div>
+            </div> -->
+            <h5>MATRIX MLM Plan</h5>
+            <div>
+                <div class="col-md-6 mb-3">
+                    <label for="downlines" class="form-label">Downlines Per User</label>
+                    <input type="number" class="form-control" id="downlinesperUserMatrix" placeholder="3">
+                </div>
+                <div class="col-md-6 mb-3 w-100" id="unilevel-sponsorbonus-container-matrix">
+                    <label for="unilevelPercentage" class="form-label">Level Bonus (%)</label>
+                    <div class="d-flex justify-content-between mb-3" id="unilevelsponsorBonus-input-matrix">
+                        <input type="text" class="form-control w-50" id="unilevelsponsorBonusMatrix" placeholder="10">
+                        <button class="btn btn-primary" onclick="matrixremoveLevel(this, 'unilevel-sponsorbonus-container-matrix')">Remove</button>
+                    </div>
+                </div>
+                <button class="btn btn-primary mb-3" onclick="matrixaddLevel('unilevel-sponsorbonus-container-matrix', 'unilevelsponsorBonus-input-matrix', 'unilevelsponsorBonusMatrix')">+ Add Level</button>
+                <div class="col-md-6 mb-3 w-100" id="unilevel-matchingbonus-container-matrix">
+                    <label for="unilevelSponsorBonus" class="form-label">Matching Bonus (%)</label>
+                    <div class="d-flex justify-content-between mb-3" id="unilevelmatchingBonus-input-matrix">
+                        <input type="text" class="form-control w-50" id="unilevelmatchingBonusMatrix" placeholder="10">
+                        <button class="btn btn-primary" onclick="matrixremoveLevel(this, 'unilevel-matchingbonus-container-matrix')">Remove</button>
+                    </div>
+                </div>
+                <button class="btn btn-primary mb-3" onclick="matrixaddLevel('unilevel-matchingbonus-container-matrix', 'unilevelmatchingBonus-input-matrix', 'unilevelmatchingBonusMatrix')">+ Add Level</button>
             </div>
         </div>
 
@@ -457,7 +480,28 @@
         document.getElementById("unilevelBtn").classList.remove("btn-primary-active")
         document.getElementById("matrixBtn").classList.add("btn-primary-active")
         document.getElementById("binaryBtn").classList.remove("btn-primary-active")
+        if (cappingContainer.contains(binaryCappingContainer)){
+            cappingContainer.removeChild(binaryCappingContainer)
+        }
+        cappingContainer.appendChild(unilevelCappingContainer)
+        unilevelCappingContainer.classList.remove("hidden")
+        binaryCappingContainer.classList.add("hidden")
     });
+    function matrixaddLevel(container_id, child_id, input_id){
+        const unilevelMatchingBonusContainer = document.getElementById(container_id)
+        event.preventDefault()
+        const matchingEntry = document.getElementById(child_id).cloneNode(true);
+        matchingEntry.querySelector(`#${input_id}`).value = '';
+        unilevelMatchingBonusContainer.appendChild(matchingEntry);
+    }
+    function matrixremoveLevel(button, container_id){
+        event.preventDefault();
+        const container = document.getElementById(container_id)
+        const parent = button.parentElement;
+        if (parent && container.children.length > 2) {
+            parent.remove();
+        }
+    }
 
 
     //helper stuff
@@ -509,8 +553,11 @@
         const unilevelmatchingbonus = document.querySelectorAll('#unilevelmatchingBonus') ? Array.from(document.querySelectorAll('#unilevelmatchingBonus')).map(input => input.value).join(', ') : null;
 
         // Matrix form values
-        const matrixPercentage = document.getElementById('matrixPercentage') ? document.getElementById('matrixPercentage').value : null;
-        const matrixSponsorBonus = document.getElementById('matrixSponsorBonus') ? document.getElementById('matrixSponsorBonus').value : null;
+        //const matrixPercentage = document.getElementById('matrixPercentage') ? document.getElementById('matrixPercentage').value : null;
+        //const matrixSponsorBonus = document.getElementById('matrixSponsorBonus') ? document.getElementById('matrixSponsorBonus').value : null;
+        const downlinesperUserMatrix = document.getElementById("downlinesperUser") ? document.getElementById("downlinesperUserMatrix").value : null
+        const levelPercentageMatrix = document.querySelectorAll('#unilevelsponsorBonus') ? Array.from(document.querySelectorAll('#unilevelsponsorBonusMatrix')).map(input => input.value).join(', ') : null;
+        const unilevelmatchingbonusMatrix = document.querySelectorAll('#unilevelmatchingBonus') ? Array.from(document.querySelectorAll('#unilevelmatchingBonusMatrix')).map(input => input.value).join(', ') : null;
 
         // Capping limit values
         const cappingLimit = document.getElementById('cappingLimit').value;
@@ -565,6 +612,7 @@
                 });
             }
         else if(!document.getElementById('unilevelForm').classList.contains('hidden')){
+            console.log(downlinesperUser, levelPercentage, unilevelmatchingbonus)
             formData.append("downlines_per_user", downlinesperUser)
             formData.append("level_bonus_per_level", levelPercentage)
             formData.append("matching_bonus_per_level", unilevelmatchingbonus)
@@ -582,9 +630,24 @@
                     console.error('Error:', error);
                 });
         }
-        // else if(!document.getElementById('matrixForm').classList.contains('hidden')){
-
-        // }
+        else if(!document.getElementById('matrixForm').classList.contains('hidden')){
+            formData.append("downlines_per_user", downlinesperUserMatrix)
+            formData.append("level_bonus_per_level", levelPercentageMatrix)
+            formData.append("matching_bonus_per_level", unilevelmatchingbonusMatrix)
+            fetch('unilevel/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: formData.toString()
+                })
+                .then(response => {
+                    window.location.href = response.url;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
     });
 </script>
 
