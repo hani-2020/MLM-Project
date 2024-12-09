@@ -83,9 +83,9 @@
         <div class="form-label">Choose Plan</div>
         <div class="col-md-6 d-flex align-items-end mb-3">
             <div class="btn-group w-100" role="group">
-                <button type="button" class="btn btn-primary" id="binaryBtn">BINARY MLM</button>
-                <button type="button" class="btn btn-primary" id="unilevelBtn">UNILEVEL MLM</button>
-                <button type="button" class="btn btn-primary" id="matrixBtn">MATRIX MLM</button>
+                <button type="button" class="btn btn-primary me-2 rounded" id="binaryBtn">BINARY MLM</button>
+                <button type="button" class="btn btn-primary rounded" id="unilevelBtn">UNILEVEL MLM</button>
+                <button type="button" class="btn btn-primary ms-2 rounded" id="matrixBtn">MATRIX MLM</button>
             </div>
         </div>
         <div class="row g-3 mb-3">
@@ -140,9 +140,15 @@
         <div class="plan-card mt-4">
             <h5>Pool Bonus</h5>
             <div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Pool Bonus Percentage</label>
-                    <input type="number" class="form-control" id="pool-bonus-percentage" placeholder="3">
+                <div class="col-md-6 mb-3 w-100 d-flex justify-content-between align-items-center">
+                    <div>
+                        <label class="form-label">Pool Bonus Percentage</label>
+                        <input type="number" class="form-control" id="pool-bonus-percentage" placeholder="3">
+                    </div>
+                    <div>
+                        <input class="form-check-input" type="checkbox" id="poolBonusAsAmount">
+                        <label class="form-label">Use as amount</label>
+                    </div>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Pool Participants Count</label>
@@ -157,11 +163,12 @@
             <div class="form-label">Choose Plan</div>
             <div class="col-md-6 d-flex align-items-end mb-3">
                 <div class="btn-group w-100" role="group">
-                    <button type="button" class="btn btn-primary" id="weak-leg-btn">Weak leg Binary</button>
-                    <button type="button" class="btn btn-primary" id="pairing-btn">Pair Binary</button>
+                    <button type="button" class="btn btn-primary me-2 rounded" id="weak-leg-btn">Weak leg Binary</button>
+                    <button type="button" class="btn btn-primary ms-2 rounded" id="pairing-btn">Pair Binary</button>
                 </div>
             </div>
             <div class="hidden" id="pairing-form">
+                <hr/>
                 <div class="col-md-4 mb-3">
                     <label for="binaryRatio" class="form-label">Ratio</label>
                     <input type="text" class="form-control" id="binaryRatio" placeholder="e.g., 1:1">
@@ -183,32 +190,54 @@
                         <button class="btn btn-primary" onclick="removeRatio(this)">Remove</button>
                     </div>
                 </div>
+                <div class="mb-3">
+                    <input class="form-check-input" type="checkbox" id="BinaryBonusAsAmount">
+                    <label class="form-label">Use as amount</label>
+                </div>
                 <button class="btn btn-primary mb-3 h-75" onclick="addRatio()">+ Add</button>
             </div>
             <div class="row g-3 mb-3 hidden" id="weak-leg-form">
+                <hr/>
                 <div class="col-md-4 hidden">
                     <label for="binaryPercentage" class="form-label">Binary Bonus Ranges</label>
                     <input type="text" class="form-control" id="binaryRange" placeholder="1-3, 4-8, 9" value="1">
                 </div>
-                <div class="col-md-4">
-                    <label for="binaryPercentage" class="form-label">Binary %</label>
-                    <input type="text" class="form-control" id="binaryPercentage" placeholder="10">
+                <div class="col-md-4 d-flex justify-content-between align-items-center w-100">
+                    <div>
+                        <label for="binaryPercentage" class="form-label">Binary %</label>
+                        <input type="text" class="form-control" id="binaryPercentage" placeholder="10">
+                    </div>
+                    <div>
+                        <input class="form-check-input" type="checkbox" id="BinaryBonusAsAmount">
+                        <label class="form-label">Use as amount</label>
+                    </div>
                 </div>
                 <div class="col-md-4 hidden">
                     <label for="binaryRatio" class="form-label">Ratio</label>
                     <input type="text" class="form-control" id="binaryRatio" placeholder="e.g., 1:1" value="1:1">
                 </div>
             </div>
-            <div class="col-md-6 mb-3">
-                <label for="sponsorBonus" class="form-label">Sponsor Bonus (%)</label>
-                <input type="number" class="form-control" id="sponsorBonus" placeholder="10">
+            <div class="col-md-6 mb-3 d-flex justify-content-between align-items-center w-100">
+                <div>
+                    <label for="sponsorBonus" class="form-label">Sponsor Bonus (%)</label>
+                    <input type="number" class="form-control" id="sponsorBonus" placeholder="10">
+                </div>
+                <div>
+                    <input class="form-check-input" type="checkbox" id="SponsorBonusAsAmount">
+                    <label class="form-label">Use as amount</label>
+                </div>
             </div>
+            <hr/>
             <div class="col-md-6 mb-3 w-100" id="matching-bonus-container">
                 <label for="matchingBonus" class="form-label">Matching Bonus (%)</label>
                 <div class="d-flex justify-content-between mb-3" id="matching-bonus-input-container">
                     <input type="text" class="form-control w-50" id="matchingBonus" placeholder="10">
                     <button class="btn btn-primary" onclick="removeLevel(this)">Remove</button>
                 </div>
+            </div>
+            <div class="mb-3">
+                <input class="form-check-input" type="checkbox" id="MatchingBonusAsAmount">
+                <label class="form-label">Use as amount</label>
             </div>
             <button class="btn btn-primary mb-3" onclick="addLevel()">+ Add Level</button>
         </div>
@@ -221,6 +250,7 @@
                     <label for="downlines" class="form-label">Downlines Per User</label>
                     <input type="number" class="form-control" id="downlinesperUser" placeholder="3">
                 </div>
+                <hr/>
                 <div class="col-md-6 mb-3 w-100" id="unilevel-sponsorbonus-container">
                     <label for="unilevelPercentage" class="form-label">Level Bonus (%)</label>
                     <div class="d-flex justify-content-between mb-3" id="unilevelsponsorBonus-input">
@@ -228,13 +258,22 @@
                         <button class="btn btn-primary" onclick="unilevelremoveLevel(this, 'unilevel-sponsorbonus-container')">Remove</button>
                     </div>
                 </div>
+                <div class="mb-3">
+                    <input class="form-check-input" type="checkbox" id="UnilevelLevelBonusAsAmount">
+                    <label class="form-label">Use as amount</label>
+                </div>
                 <button class="btn btn-primary mb-3" onclick="unileveladdLevel('unilevel-sponsorbonus-container', 'unilevelsponsorBonus-input', 'unilevelsponsorBonus')">+ Add Level</button>
+                <hr/>
                 <div class="col-md-6 mb-3 w-100" id="unilevel-matchingbonus-container">
                     <label for="unilevelSponsorBonus" class="form-label">Matching Bonus (%)</label>
                     <div class="d-flex justify-content-between mb-3" id="unilevelmatchingBonus-input">
                         <input type="text" class="form-control w-50" id="unilevelmatchingBonus" placeholder="10">
                         <button class="btn btn-primary" onclick="unilevelremoveLevel(this, 'unilevel-matchingbonus-container')">Remove</button>
                     </div>
+                </div>
+                <div class="mb-3">
+                    <input class="form-check-input" type="checkbox" id="UnilevelMatchingBonusAsAmount">
+                    <label class="form-label">Use as amount</label>
                 </div>
                 <button class="btn btn-primary mb-3" onclick="unileveladdLevel('unilevel-matchingbonus-container', 'unilevelmatchingBonus-input', 'unilevelmatchingBonus')">+ Add Level</button>
             </div>
@@ -248,6 +287,7 @@
                     <label for="downlines" class="form-label">Downlines Per User</label>
                     <input type="number" class="form-control" id="downlinesperUserMatrix" placeholder="3">
                 </div>
+                <hr/>
                 <div class="col-md-6 mb-3 w-100" id="unilevel-sponsorbonus-container-matrix">
                     <label for="unilevelPercentage" class="form-label">Level Bonus (%)</label>
                     <div class="d-flex justify-content-between mb-3" id="unilevelsponsorBonus-input-matrix">
@@ -255,13 +295,22 @@
                         <button class="btn btn-primary" onclick="matrixremoveLevel(this, 'unilevel-sponsorbonus-container-matrix')">Remove</button>
                     </div>
                 </div>
+                <div class="mb-3">
+                    <input class="form-check-input" type="checkbox" id="MatrixLevelBonusAsAmount">
+                    <label class="form-label">Use as amount</label>
+                </div>
                 <button class="btn btn-primary mb-3" onclick="matrixaddLevel('unilevel-sponsorbonus-container-matrix', 'unilevelsponsorBonus-input-matrix', 'unilevelsponsorBonusMatrix')">+ Add Level</button>
+                <hr/>
                 <div class="col-md-6 mb-3 w-100" id="unilevel-matchingbonus-container-matrix">
                     <label for="unilevelSponsorBonus" class="form-label">Matching Bonus (%)</label>
                     <div class="d-flex justify-content-between mb-3" id="unilevelmatchingBonus-input-matrix">
                         <input type="text" class="form-control w-50" id="unilevelmatchingBonusMatrix" placeholder="10">
                         <button class="btn btn-primary" onclick="matrixremoveLevel(this, 'unilevel-matchingbonus-container-matrix')">Remove</button>
                     </div>
+                </div>
+                <div class="mb-3">
+                    <input class="form-check-input" type="checkbox" id="MatrixMatchingBonusAsAmount">
+                    <label class="form-label">Use as amount</label>
                 </div>
                 <button class="btn btn-primary mb-3" onclick="matrixaddLevel('unilevel-matchingbonus-container-matrix', 'unilevelmatchingBonus-input-matrix', 'unilevelmatchingBonusMatrix')">+ Add Level</button>
             </div>
