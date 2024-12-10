@@ -41,10 +41,13 @@ class BinaryCalculator(View):
             'product_names': ','.join(request.POST.getlist('product_names')).rstrip(','),
             'product_quantities': ','.join(request.POST.getlist('product_quantities')).rstrip(','),
             'sponsor_bonus': float(request.POST.get('sponsor_bonus')),
+            'sponsor_bonus_as_amount': request.POST.get('sponsor_bonus_as_amount'),
             'binary_bonus_range': ','.join(request.POST.getlist('binary_bonus_range')),
             'binary_bonus': ','.join(request.POST.getlist('binary_bonus')),
+            'binary_bonus_as_amount': request.POST.get("binary_bonus_as_amount"),
             'binary_bonus_pairing_ratio': ','.join(request.POST.getlist('binary_bonus_pairing_ratio')),
             'matching_bonus_per_level': ','.join(request.POST.getlist('matching_bonus_per_level')),
+            'matching_bonus_as_amount': request.POST.get("matching_bonus_as_amount"),
             'capping_amount': request.POST.get('capping_amount'), 
             'pool_bonus': float(request.POST.get('pool_bonus')),
             'pool_distribution': int(request.POST.get('pool_distribution'))
@@ -63,12 +66,15 @@ class BinaryCalculator(View):
             product_quantities = form.cleaned_data['product_quantities']
 
             sponsor_bonus = form.cleaned_data['sponsor_bonus']
+            sponsor_bonus_as_amount = form.cleaned_data['sponsor_bonus_as_amount']
 
             binary_bonus_range = form.cleaned_data['binary_bonus_range']
             binary_bonus = form.cleaned_data['binary_bonus']
+            binary_bonus_as_amount = form.cleaned_data['binary_bonus_as_amount']
             binary_bonus_pairing_ratio = form.cleaned_data['binary_bonus_pairing_ratio']
 
             matching_bonus_string = form.cleaned_data['matching_bonus_per_level']
+            matching_bonus_as_amount = form.cleaned_data['matching_bonus_as_amount']
 
             capping_amount = form.cleaned_data['capping_amount']
             capping_scope = form.cleaned_data['capping_scope']
@@ -111,9 +117,12 @@ class BinaryCalculator(View):
             'product_order_list': product_names_list,
             'products_catalogue': products_catalogue,
             'sponsor_bonus': sponsor_bonus,
+            'sponsor_bonus_as_amount': sponsor_bonus_as_amount,
             'binary_bonus_pairing_ratios': binary_bonus_pairing_ratio_dict,
             'binary_bonus_range': binary_bonus_dict,
+            'binary_bonus_as_amount': binary_bonus_as_amount,
             'matching_bonus_list': matching_bonus_list,
+            'matching_bonus_as_amount': matching_bonus_as_amount,
             'capping_amount': capping_amount,
             'capping_scope': capping_scope,
             'pool_bonus': pool_bonus,
@@ -138,7 +147,9 @@ class UnilevelCalculator(View):
             'product_names': ','.join(request.POST.getlist('product_names')).rstrip(','),
             'product_quantities': ','.join(request.POST.getlist('product_quantities')).rstrip(','),
             'level_bonus_per_level': ','.join(request.POST.getlist('level_bonus_per_level')),
+            'level_bonus_as_amount': request.POST.get('level_bonus_as_amount'),
             'matching_bonus_per_level': ','.join(request.POST.getlist('matching_bonus_per_level')),
+            'matching_bonus_as_amount': request.POST.get("matching_bonus_as_amount"),
             'capping_amount': request.POST.get('capping_amount'), 
             "downlines_per_user": int(request.POST.get('downlines_per_user')),
             'pool_bonus': float(request.POST.get('pool_bonus')),
@@ -159,8 +170,10 @@ class UnilevelCalculator(View):
             product_quantities = form.cleaned_data['product_quantities']
 
             level_bonus_string = form.cleaned_data['level_bonus_per_level']
+            level_bonus_as_amount = form.cleaned_data['level_bonus_as_amount']
 
             matching_bonus_string = form.cleaned_data['matching_bonus_per_level']
+            matching_bonus_as_amount = form.cleaned_data['matching_bonus_as_amount']
 
             capping_amount = form.cleaned_data['capping_amount']
             capping_scope = form.cleaned_data['capping_scope']
@@ -192,7 +205,9 @@ class UnilevelCalculator(View):
             'product_order_list': product_names_list,
             'products_catalogue': products_catalogue,
             'level_bonus': level_bonus_list,
+            'level_bonus_as_amount': level_bonus_as_amount,
             'matching_bonus_list': matching_bonus_list,
+            'matching_bonus_as_amount': matching_bonus_as_amount,
             'capping_amount': capping_amount,
             'capping_scope': capping_scope,
             'pool_bonus': pool_bonus,

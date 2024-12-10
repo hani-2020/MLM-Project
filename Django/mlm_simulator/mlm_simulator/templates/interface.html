@@ -140,7 +140,8 @@
         <div class="plan-card mt-4">
             <h5>Pool Bonus</h5>
             <div>
-                <div class="col-md-6 mb-3 w-100 d-flex justify-content-between align-items-center">
+                <!--Uncomment incase of using amount:START-->
+                <!-- <div class="col-md-6 mb-3 w-100 d-flex justify-content-between align-items-center">
                     <div>
                         <label class="form-label">Pool Bonus Percentage</label>
                         <input type="number" class="form-control" id="pool-bonus-percentage" placeholder="3">
@@ -149,6 +150,11 @@
                         <input class="form-check-input" type="checkbox" id="poolBonusAsAmount">
                         <label class="form-label">Use as amount</label>
                     </div>
+                </div> -->
+                <!--Uncomment incase of using amount:END-->
+                <div class="col-md-6">
+                    <label class="form-label">Pool Bonus Percentage</label>
+                    <input type="number" class="form-control" id="pool-bonus-percentage" placeholder="3">
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Pool Participants Count</label>
@@ -418,7 +424,6 @@
     function addRatio(){
         event.preventDefault()
         const RatioEntry = document.getElementById("pairing-binary-inputs").cloneNode(true);
-        //RatioEntry.querySelector("#binaryRange").value = '';
         RatioEntry.querySelector("#binaryRangeMax").value = '';
         RatioEntry.querySelector("#binaryRangeMin").value = '';
         RatioEntry.querySelector("#binaryPercentage").value = '';
@@ -563,21 +568,29 @@
             binaryRange = ranges.join(', ');
         }
         const binaryPercentage = document.querySelectorAll('#binaryPercentage') ? Array.from(document.querySelectorAll('#binaryPercentage')).map(input => input.value).join(', ') : null;
+        const binaryBonusAsAmount = document.getElementById("BinaryBonusAsAmount") ? document.getElementById("BinaryBonusAsAmount").checked : false;
         const binaryRatio = document.getElementById('binaryRatio') ? document.getElementById('binaryRatio').value : null;
         const sponsorBonus = document.getElementById('sponsorBonus') ? document.getElementById('sponsorBonus').value : null;
+        const sponsorBonusAsAmount = document.getElementById("SponsorBonusAsAmount") ? document.getElementById("SponsorBonusAsAmount").checked : false;
         const matchingBonusInputs = document.querySelectorAll('#matchingBonus') ? Array.from(document.querySelectorAll('#matchingBonus')).map(input => input.value).join(', ') : null;
+        const matchingBonusAsAmount = document.getElementById("MatchingBonusAsAmount") ? document.getElementById("MatchingBonusAsAmount").checked : false;
         
         // Unilevel form values
         const downlinesperUser = document.getElementById("downlinesperUser") ? document.getElementById("downlinesperUser").value : null
         const levelPercentage = document.querySelectorAll('#unilevelsponsorBonus') ? Array.from(document.querySelectorAll('#unilevelsponsorBonus')).map(input => input.value).join(', ') : null;
+        const levelBonusAsAmount = document.getElementById("UnilevelLevelBonusAsAmount") ? document.getElementById("UnilevelLevelBonusAsAmount").checked : false;
         const unilevelmatchingbonus = document.querySelectorAll('#unilevelmatchingBonus') ? Array.from(document.querySelectorAll('#unilevelmatchingBonus')).map(input => input.value).join(', ') : null;
+        const unilevelmatchingBonusAsAmount = document.getElementById("UnilevelMatchingBonusAsAmount") ? document.getElementById("UnilevelMatchingBonusAsAmount").checked : false;
 
         // Matrix form values
         //const matrixPercentage = document.getElementById('matrixPercentage') ? document.getElementById('matrixPercentage').value : null;
         //const matrixSponsorBonus = document.getElementById('matrixSponsorBonus') ? document.getElementById('matrixSponsorBonus').value : null;
-        const downlinesperUserMatrix = document.getElementById("downlinesperUser") ? document.getElementById("downlinesperUserMatrix").value : null
-        const levelPercentageMatrix = document.querySelectorAll('#unilevelsponsorBonus') ? Array.from(document.querySelectorAll('#unilevelsponsorBonusMatrix')).map(input => input.value).join(', ') : null;
-        const unilevelmatchingbonusMatrix = document.querySelectorAll('#unilevelmatchingBonus') ? Array.from(document.querySelectorAll('#unilevelmatchingBonusMatrix')).map(input => input.value).join(', ') : null;
+        const downlinesperUserMatrix = document.getElementById("downlinesperUserMatrix") ? document.getElementById("downlinesperUserMatrix").value : null
+        const levelPercentageMatrix = document.querySelectorAll('#unilevelsponsorBonusMatrix') ? Array.from(document.querySelectorAll('#unilevelsponsorBonusMatrix')).map(input => input.value).join(', ') : null;
+        const levelBonusAsAmountMatrix = document.getElementById("MatrixLevelBonusAsAmount") ? document.getElementById("MatrixLevelBonusAsAmount").checked : false;
+        const unilevelmatchingbonusMatrix = document.querySelectorAll('#unilevelmatchingBonusMatrix') ? Array.from(document.querySelectorAll('#unilevelmatchingBonusMatrix')).map(input => input.value).join(', ') : null;
+        const unilevelmatchingBonusAsAmountMatrix = document.getElementById("MatrixMatchingBonusAsAmount") ? document.getElementById("MatrixMatchingBonusAsAmount").checked : false;
+
 
         // Capping limit values
         const cappingLimit = document.getElementById('cappingLimit').value;
@@ -613,10 +626,13 @@
         formData.append("pool_distribution", poolBonusCount);
         if (!document.getElementById('binaryForm').classList.contains('hidden')) {
             formData.append('sponsor_bonus', sponsorBonus);
+            formData.append('sponsor_bonus_as_amount', sponsorBonusAsAmount)
             formData.append('matching_bonus_per_level', matchingBonusInputs);
+            formData.append('matching_bonus_as_amount', matchingBonusAsAmount)
             formData.append('binary_bonus_range', binaryRange);
-            formData.append('binary_bonus', binaryPercentage);
             formData.append('binary_bonus_pairing_ratio', binaryRatio);
+            formData.append('binary_bonus', binaryPercentage);
+            formData.append('binary_bonus_as_amount', binaryBonusAsAmount)
             fetch('binary/', {
                 method: 'POST',
                 headers: {
@@ -635,7 +651,9 @@
             console.log(downlinesperUser, levelPercentage, unilevelmatchingbonus)
             formData.append("downlines_per_user", downlinesperUser)
             formData.append("level_bonus_per_level", levelPercentage)
+            formData.append('level_bonus_as_amount', levelBonusAsAmount)
             formData.append("matching_bonus_per_level", unilevelmatchingbonus)
+            formData.append('matching_bonus_as_amount', unilevelmatchingBonusAsAmount)
             fetch('unilevel/', {
                 method: 'POST',
                 headers: {
@@ -653,7 +671,9 @@
         else if(!document.getElementById('matrixForm').classList.contains('hidden')){
             formData.append("downlines_per_user", downlinesperUserMatrix)
             formData.append("level_bonus_per_level", levelPercentageMatrix)
+            formData.append('level_bonus_as_amount', levelBonusAsAmountMatrix)
             formData.append("matching_bonus_per_level", unilevelmatchingbonusMatrix)
+            formData.append('matching_bonus_as_amount', unilevelmatchingBonusAsAmountMatrix)
             fetch('unilevel/', {
                 method: 'POST',
                 headers: {

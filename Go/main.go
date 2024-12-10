@@ -342,11 +342,14 @@ func main() {
 		products_catalogue := data["products_catalogue"].(map[string]interface{})
 
 		sponsor_perc := data["sponsor_bonus"].(float64)
+		// sponsor_bonus_as_amount := data["sponsor_bonus_as_amount"].(bool)
 
 		binary_bonus_pairing_ratios := data["binary_bonus_pairing_ratios"].(map[string]interface{})
 		binary_bonus_range := data["binary_bonus_range"].([]interface{})
+		// binary_bonus_as_amount := data["binary_bonus_as_amount"].(bool)
 
 		matching_percs := data["matching_bonus_list"].([]interface{})
+		// matching_bonus_as_amount := data["matching_bonus_as_amount"].(bool)
 
 		capping_amount := data["capping_amount"].(float64)
 		rawCappingScope := data["capping_scope"].([]interface{})
@@ -490,8 +493,10 @@ func main() {
 		products_catalogue := data["products_catalogue"].(map[string]interface{})
 
 		level_percs := data["level_bonus"].([]interface{})
+		// level_bonus_as_amount := data["level_bonus_as_amount"].(bool)
 
 		matching_percs := data["matching_bonus_list"].([]interface{})
+		// matching_bonus_as_amount := data["matching_bonus_as_amount"].(bool)
 
 		capping_amount := data["capping_amount"].(float64)
 		rawCappingScope := data["capping_scope"].([]interface{})
