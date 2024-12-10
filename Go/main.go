@@ -141,11 +141,16 @@ func build_binary_tree(num_users int, joining_package_fee float64, additional_pr
 	}
 }
 
-func set_get_sponsor_bonus(sponsor_perc float64, capping_amount float64, capping_scope map[string]bool) float64 {
+func set_get_sponsor_bonus(sponsor_perc float64, capping_amount float64, capping_scope map[string]bool, sponsor_bonus_as_amount bool) float64 {
 	var sponsorBonus float64
 	for _, member := range members {
+		var sponsor_bonus float64
 		if member.Parent != nil {
-			sponsor_bonus := member.Parent.SponsorBonus + (member.Sale * sponsor_perc / 100)
+			if sponsor_bonus_as_amount != true {
+				sponsor_bonus = member.Parent.SponsorBonus + (member.Sale * sponsor_perc / 100)
+			} else {
+				sponsor_bonus = member.Parent.SponsorBonus + sponsor_perc
+			}
 			if capping_scope["3"] && sponsor_bonus > capping_amount {
 				member.Parent.SponsorBonus = capping_amount
 			} else {
@@ -169,7 +174,7 @@ func traverse(member *Member) float64 {
 	return currentSales + leftSales + rightSales
 }
 
-func set_get_binary_bonus(binaryBonusPairingRatios map[string]int, binaryBonusRange []map[string]float64, capping_amount float64, capping_scope map[string]bool) float64 {
+func set_get_binary_bonus(binaryBonusPairingRatios map[string]int, binaryBonusRange []map[string]float64, capping_amount float64, capping_scope map[string]bool, binary_bonus_as_amount bool) float64 {
 	var total_bonus float64 = 0
 	for _, member := range members {
 		left_sales := 0.0
@@ -193,7 +198,11 @@ func set_get_binary_bonus(binaryBonusPairingRatios map[string]int, binaryBonusRa
 		for i := range binaryBonusRange {
 			if bits >= binaryBonusRange[i]["min"] && bits <= binaryBonusRange[i]["max"] {
 				binary_percentage := binaryBonusRange[i]["bonus"]
-				binaryBonus = math.Min(float64(left_amount), float64(right_amount)) * binary_percentage / 100
+				if binary_bonus_as_amount != true {
+					binaryBonus = math.Min(float64(left_amount), float64(right_amount)) * binary_percentage / 100
+				} else {
+					binaryBonus = binary_percentage
+				}
 				break
 			}
 		}
@@ -207,7 +216,7 @@ func set_get_binary_bonus(binaryBonusPairingRatios map[string]int, binaryBonusRa
 	return total_bonus
 }
 
-func set_get_matching_bonus(matching_percs_list []float64, capping_amount float64, capping_scope map[string]bool) float64 {
+func set_get_matching_bonus(matching_percs_list []float64, capping_amount float64, capping_scope map[string]bool, matching_bonus_as_amount bool) float64 {
 	var total_bonus float64
 	for _, member := range members {
 		iterant := 0
@@ -215,7 +224,7 @@ func set_get_matching_bonus(matching_percs_list []float64, capping_amount float6
 			continue
 		}
 		parent := member.Parent
-		apply_matching_bonus(member, parent, matching_percs_list, iterant, capping_amount, capping_scope)
+		apply_matching_bonus(member, parent, matching_percs_list, iterant, capping_amount, capping_scope, matching_bonus_as_amount)
 	}
 	for _, member := range members {
 		total_bonus = total_bonus + member.MatchingBonus
@@ -223,12 +232,16 @@ func set_get_matching_bonus(matching_percs_list []float64, capping_amount float6
 	return total_bonus
 }
 
-func apply_matching_bonus(member *Member, parent *Member, matching_perc_list []float64, iterant int, capping_amount float64, capping_scope map[string]bool) {
+func apply_matching_bonus(member *Member, parent *Member, matching_perc_list []float64, iterant int, capping_amount float64, capping_scope map[string]bool, matching_bonus_as_amount bool) {
 	if iterant >= len(matching_perc_list) || parent == nil {
 		return
 	}
 	matching_bonus := parent.MatchingBonus
-	matching_bonus = matching_bonus + (member.BinaryBonus * matching_perc_list[iterant] / 100)
+	if matching_bonus_as_amount != true {
+		matching_bonus = matching_bonus + (member.BinaryBonus * matching_perc_list[iterant] / 100)
+	} else {
+		matching_bonus = matching_bonus + matching_perc_list[iterant]
+	}
 	if capping_scope["2"] && matching_bonus > capping_amount {
 		parent.MatchingBonus = capping_amount
 	} else {
@@ -236,7 +249,7 @@ func apply_matching_bonus(member *Member, parent *Member, matching_perc_list []f
 	}
 	iterant = iterant + 1
 	parent = parent.Parent
-	apply_matching_bonus(member, parent, matching_perc_list, iterant, capping_amount, capping_scope)
+	apply_matching_bonus(member, parent, matching_perc_list, iterant, capping_amount, capping_scope, matching_bonus_as_amount)
 }
 
 func set_get_pool_bonus(pool_perc float64, dist_no int, expense float64, revenue float64, sponsorBonus float64, binary_bonus float64, matching_bonus float64) float64 {
@@ -256,7 +269,7 @@ func set_get_pool_bonus(pool_perc float64, dist_no int, expense float64, revenue
 	return pool_amount
 }
 
-func set_get_level_bonus(level_percs_list []float64, capping_amount float64, capping_scope map[string]bool) float64 {
+func set_get_level_bonus(level_percs_list []float64, capping_amount float64, capping_scope map[string]bool, level_bonus_as_amount bool) float64 {
 	var total_bonus float64
 	for _, member := range members {
 		iterant := 0
@@ -264,7 +277,7 @@ func set_get_level_bonus(level_percs_list []float64, capping_amount float64, cap
 			continue
 		}
 		parent := member.Parent
-		apply_level_bonus(member, parent, level_percs_list, iterant, capping_amount, capping_scope)
+		apply_level_bonus(member, parent, level_percs_list, iterant, capping_amount, capping_scope, level_bonus_as_amount)
 	}
 	for _, member := range members {
 		total_bonus = total_bonus + member.SponsorBonus
@@ -272,12 +285,16 @@ func set_get_level_bonus(level_percs_list []float64, capping_amount float64, cap
 	return total_bonus
 }
 
-func apply_level_bonus(member *Member, parent *Member, level_percs_list []float64, iterant int, capping_amount float64, capping_scope map[string]bool) {
+func apply_level_bonus(member *Member, parent *Member, level_percs_list []float64, iterant int, capping_amount float64, capping_scope map[string]bool, level_bonus_as_amount bool) {
 	if iterant >= len(level_percs_list) || parent == nil {
 		return
 	}
 	sponsor_bonus := parent.SponsorBonus
-	sponsor_bonus = sponsor_bonus + (member.Sale * level_percs_list[iterant] / 100)
+	if level_bonus_as_amount != true {
+		sponsor_bonus = sponsor_bonus + (member.Sale * level_percs_list[iterant] / 100)
+	} else {
+		sponsor_bonus = sponsor_bonus + level_percs_list[iterant]
+	}
 	if capping_scope["4"] && sponsor_bonus > capping_amount {
 		parent.SponsorBonus = capping_amount
 	} else {
@@ -285,10 +302,10 @@ func apply_level_bonus(member *Member, parent *Member, level_percs_list []float6
 	}
 	iterant = iterant + 1
 	parent = parent.Parent
-	apply_level_bonus(member, parent, level_percs_list, iterant, capping_amount, capping_scope)
+	apply_level_bonus(member, parent, level_percs_list, iterant, capping_amount, capping_scope, level_bonus_as_amount)
 }
 
-func set_get_uni_matching_bonus(matching_percs_list []float64, capping_amount float64, capping_scope map[string]bool) float64 {
+func set_get_uni_matching_bonus(matching_percs_list []float64, capping_amount float64, capping_scope map[string]bool, matching_bonus_as_amount bool) float64 {
 	var total_bonus float64
 	for _, member := range members {
 		iterant := 0
@@ -296,7 +313,7 @@ func set_get_uni_matching_bonus(matching_percs_list []float64, capping_amount fl
 			continue
 		}
 		parent := member.Parent
-		apply_uni_matching_bonus(member, parent, matching_percs_list, iterant, capping_amount, capping_scope)
+		apply_uni_matching_bonus(member, parent, matching_percs_list, iterant, capping_amount, capping_scope, matching_bonus_as_amount)
 	}
 	for _, member := range members {
 		total_bonus = total_bonus + member.MatchingBonus
@@ -304,12 +321,16 @@ func set_get_uni_matching_bonus(matching_percs_list []float64, capping_amount fl
 	return total_bonus
 }
 
-func apply_uni_matching_bonus(member *Member, parent *Member, matching_perc_list []float64, iterant int, capping_amount float64, capping_scope map[string]bool) {
+func apply_uni_matching_bonus(member *Member, parent *Member, matching_perc_list []float64, iterant int, capping_amount float64, capping_scope map[string]bool, matching_bonus_as_amount bool) {
 	if iterant >= len(matching_perc_list) || parent == nil {
 		return
 	}
 	matching_bonus := parent.MatchingBonus
-	matching_bonus = matching_bonus + (member.SponsorBonus * matching_perc_list[iterant] / 100)
+	if matching_bonus_as_amount != true {
+		matching_bonus = matching_bonus + (member.SponsorBonus * matching_perc_list[iterant] / 100)
+	} else {
+		matching_bonus = matching_bonus + matching_perc_list[iterant]
+	}
 	if capping_scope["2"] && matching_bonus > capping_amount {
 		parent.MatchingBonus = capping_amount
 	} else {
@@ -317,7 +338,7 @@ func apply_uni_matching_bonus(member *Member, parent *Member, matching_perc_list
 	}
 	iterant = iterant + 1
 	parent = parent.Parent
-	apply_uni_matching_bonus(member, parent, matching_perc_list, iterant, capping_amount, capping_scope)
+	apply_uni_matching_bonus(member, parent, matching_perc_list, iterant, capping_amount, capping_scope, matching_bonus_as_amount)
 }
 
 func main() {
@@ -342,14 +363,14 @@ func main() {
 		products_catalogue := data["products_catalogue"].(map[string]interface{})
 
 		sponsor_perc := data["sponsor_bonus"].(float64)
-		// sponsor_bonus_as_amount := data["sponsor_bonus_as_amount"].(bool)
+		sponsor_bonus_as_amount := data["sponsor_bonus_as_amount"].(bool)
 
 		binary_bonus_pairing_ratios := data["binary_bonus_pairing_ratios"].(map[string]interface{})
 		binary_bonus_range := data["binary_bonus_range"].([]interface{})
-		// binary_bonus_as_amount := data["binary_bonus_as_amount"].(bool)
+		binary_bonus_as_amount := data["binary_bonus_as_amount"].(bool)
 
 		matching_percs := data["matching_bonus_list"].([]interface{})
-		// matching_bonus_as_amount := data["matching_bonus_as_amount"].(bool)
+		matching_bonus_as_amount := data["matching_bonus_as_amount"].(bool)
 
 		capping_amount := data["capping_amount"].(float64)
 		rawCappingScope := data["capping_scope"].([]interface{})
@@ -419,11 +440,11 @@ func main() {
 					break
 				}
 			}
-			sponsorBonus = set_get_sponsor_bonus(sponsor_perc, capping_amount, cappingScopeMap)
+			sponsorBonus = set_get_sponsor_bonus(sponsor_perc, capping_amount, cappingScopeMap, sponsor_bonus_as_amount)
 			sponsorBonus = sponsorBonus - members[0].SponsorBonus
-			binary_bonus = set_get_binary_bonus(binaryBonusPairingRatios, binaryBonusRange, capping_amount, cappingScopeMap)
+			binary_bonus = set_get_binary_bonus(binaryBonusPairingRatios, binaryBonusRange, capping_amount, cappingScopeMap, binary_bonus_as_amount)
 			binary_bonus = binary_bonus - members[0].BinaryBonus
-			matching_bonus = set_get_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
+			matching_bonus = set_get_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap, matching_bonus_as_amount)
 			matching_bonus = matching_bonus - members[0].MatchingBonus
 			for _, member := range members {
 				revenue = revenue + member.Sale
@@ -493,10 +514,10 @@ func main() {
 		products_catalogue := data["products_catalogue"].(map[string]interface{})
 
 		level_percs := data["level_bonus"].([]interface{})
-		// level_bonus_as_amount := data["level_bonus_as_amount"].(bool)
+		level_bonus_as_amount := data["level_bonus_as_amount"].(bool)
 
 		matching_percs := data["matching_bonus_list"].([]interface{})
-		// matching_bonus_as_amount := data["matching_bonus_as_amount"].(bool)
+		matching_bonus_as_amount := data["matching_bonus_as_amount"].(bool)
 
 		capping_amount := data["capping_amount"].(float64)
 		rawCappingScope := data["capping_scope"].([]interface{})
@@ -556,9 +577,9 @@ func main() {
 					break
 				}
 			}
-			level_bonus = set_get_level_bonus(level_percs_list, capping_amount, cappingScopeMap)
+			level_bonus = set_get_level_bonus(level_percs_list, capping_amount, cappingScopeMap, level_bonus_as_amount)
 			level_bonus = level_bonus - members[0].SponsorBonus
-			matching_bonus = set_get_uni_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap)
+			matching_bonus = set_get_uni_matching_bonus(matching_perc_list, capping_amount, cappingScopeMap, matching_bonus_as_amount)
 			matching_bonus = matching_bonus - members[0].MatchingBonus
 			var revenue float64
 			for _, member := range members {
