@@ -201,7 +201,11 @@ func set_get_binary_bonus(binaryBonusPairingRatios map[string]int, binaryBonusRa
 				if binary_bonus_as_amount != true {
 					binaryBonus = math.Min(float64(left_amount), float64(right_amount)) * binary_percentage / 100
 				} else {
-					binaryBonus = binary_percentage
+					if math.Min(float64(left_amount), float64(right_amount)) == 0 {
+						binaryBonus = 0
+					} else {
+						binaryBonus = binary_percentage
+					}
 				}
 				break
 			}
@@ -240,7 +244,11 @@ func apply_matching_bonus(member *Member, parent *Member, matching_perc_list []f
 	if matching_bonus_as_amount != true {
 		matching_bonus = matching_bonus + (member.BinaryBonus * matching_perc_list[iterant] / 100)
 	} else {
-		matching_bonus = matching_bonus + matching_perc_list[iterant]
+		if member.BinaryBonus == 0 {
+			matching_bonus = matching_bonus + 0
+		} else {
+			matching_bonus = matching_bonus + matching_perc_list[iterant]
+		}
 	}
 	if capping_scope["2"] && matching_bonus > capping_amount {
 		parent.MatchingBonus = capping_amount
@@ -329,7 +337,11 @@ func apply_uni_matching_bonus(member *Member, parent *Member, matching_perc_list
 	if matching_bonus_as_amount != true {
 		matching_bonus = matching_bonus + (member.SponsorBonus * matching_perc_list[iterant] / 100)
 	} else {
-		matching_bonus = matching_bonus + matching_perc_list[iterant]
+		if member.SponsorBonus == 0 {
+			matching_bonus = matching_bonus + 0
+		} else {
+			matching_bonus = matching_bonus + matching_perc_list[iterant]
+		}
 	}
 	if capping_scope["2"] && matching_bonus > capping_amount {
 		parent.MatchingBonus = capping_amount
